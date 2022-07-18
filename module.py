@@ -38,13 +38,11 @@ class Module(module.ModuleModel):
         log.info(f'Initializing module {self.descriptor.name}')
         #init_db()
 
-        #self.descriptor.init_api()
+        self.descriptor.init_api()
 
+        self.descriptor.init_rpcs()
 
-        #self.descriptor.init_rpcs()
-
-
-        #self.descriptor.init_blueprint()
+        self.descriptor.init_blueprint()
 
         theme.register_subsection(
             "performance", "ui",
@@ -62,10 +60,6 @@ class Module(module.ModuleModel):
             kind="slot",
             prefix="ui_results_",
         )
-
-        # security_app_styles
-        # security_app_scripts
-        # security_app_content
 
         self.descriptor.init_slots()
 
