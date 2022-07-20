@@ -36,7 +36,7 @@ class Module(module.ModuleModel):
     def init(self):
         """ Init module """
         log.info(f'Initializing module {self.descriptor.name}')
-        #init_db()
+        init_db()
 
         self.descriptor.init_api()
 
