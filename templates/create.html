@@ -82,7 +82,8 @@
                                         <p>
                                             <h13>Aggregation rule</h13>
                                         </p>
-                                        <select class="selectpicker bootstrap-select__b mt-2" data-style="btn" id="aggregation">
+                                        <select class="selectpicker bootstrap-select__b mt-2" data-style="btn"
+                                                id="aggregation">
                                             <option value="max">Max</option>
                                             <option value="min">Min</option>
                                             <option value="avg">Avg</option>
@@ -106,9 +107,8 @@
                         </div>
                     </div>
                 </div>
-                {{ template_slot("locations_content", payload={"modal_id": "ui"}) | safe }}
                 {{ template_slot("params_table_content", payload={"caption": "Test Parameters", "modal_id":
-                "backend"})
+                "ui"})
                 | safe }}
             </div>
         </div>

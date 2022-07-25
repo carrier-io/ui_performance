@@ -125,14 +125,14 @@
             <tr>
                 <th scope="col" data-checkbox="true"></th>
                 <th data-visible="false" data-field="id">index</th>
-                <th scope="col" data-sortable="true" data-field="name" data-formatter=createLinkToTest>Name</th>
+                <th scope="col" data-sortable="true" data-field="name" data-formatter=createLinkToUIReport>Name</th>
                 <th scope="col" data-sortable="true" data-field="start_time">Date</th>
                 <th scope="col" data-sortable="true" data-field="duration">Duration</th>
-                <th scope="col" data-sortable="true" data-field="vusers">vUsers</th>
                 <th scope="col" data-sortable="true" data-field="environment">Env</th>
-                <th scope="col" data-sortable="true" data-field="type">Test Type</th>
-                <th scope="col" data-sortable="true" data-field="throughput">TPS</th>
+                <th scope="col" data-sortable="true" data-field="avg_page_time">AVG Page time</th>
+                <th scope="col" data-sortable="true" data-field="avg_action_time">AVG action time</th>
                 <th scope="col" data-sortable="true" data-field="failure_rate">Fail Rate</th>
+                <th scope="col" data-sortable="true" data-field="browser">Browser</th>
                 <th scope="col" data-sortable="true" data-field="tags">Tags</th>
                 <th scope="col" data-sortable="true" data-field="test_status.status"
                     data-formatter="reportsStatusFormatter">Status
@@ -144,4 +144,5 @@
 </div>
 
 {% include 'ui_performance:create.html' %}
+{% include 'ui_performance:runtest.html' %}
 {% include 'ui_performance:thresholds.html' %}
