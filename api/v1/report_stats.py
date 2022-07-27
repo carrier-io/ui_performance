@@ -4,7 +4,7 @@ from flask import current_app, request, make_response
 from ...models.ui_report import UIReport
 from ...models.ui_result import UIResult
 from tools import api_tools
-from uuid import uuid4
+from sqlalchemy import and_
 
 
 class API(Resource):
@@ -21,33 +21,11 @@ class API(Resource):
     def get(self, project_id: int):
         args = request.args
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
-        total, reports = api_tools.get(project_id, args, UIReport)
-
+        total, reports = api_tools.get(project.id, args, UIReport)
         res = []
 
         for report in reports:
-            results = UIResult.query.filter_by(report_uid=report.uid).all()
-
-            totals = list(map(lambda x: x.total, results))
-
-            try:
-                avg_page_load = sum(totals) / len(totals)
-            except ZeroDivisionError:
-                avg_page_load = 0
-
-            try:
-                thresholds_missed = round(report.thresholds_failed / report.thresholds_total * 100, 2)
-            except ZeroDivisionError:
-                thresholds_missed = 0
-
-            data = dict(id=report.id, project_id=project.id, name=report.name, environment=report.environment,
-                        browser=report.browser, test_type=report.test_type,
-                        browser_version=report.browser_version, resolution="1380x749",
-                        end_time=report.stop_time, start_time=report.start_time, duration=report.duration,
-                        failures=thresholds_missed,
-                        thresholds_missed=thresholds_missed,
-                        avg_page_load=round(avg_page_load / 1000, 2),
-                        avg_step_duration=0.5, build_id=str(uuid4()), release_id=1, test_status=report.test_status)
+            data = self.module.context.rpc_manager.call.ui_results_or_404(report.id, report)
             res.append(data)
 
         for each in res:

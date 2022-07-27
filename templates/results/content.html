@@ -1,0 +1,157 @@
+<div class="card card-12 pb-4">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-4">
+                <h3><a id="back-button" href="/-/performance/ui"><i
+                        class="fas fa-arrow-left"></i></a> {{
+                    test_data["name"] }} (back)</h3>
+            </div>
+            <div class="col-8">
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-secondary" onclick="reRunTest()"
+                            data-toggle="tooltip" data-placement="top" title="Rerun Test"><i class="fas fa-play"></i>
+                    </button>
+                    <button type="button" class="btn btn-secondary mx-2" onclick="downloadReport()"
+                            data-toggle="tooltip" data-placement="top" title="Download report"><i
+                            class="fas fa-file-download"></i></button>
+                    <button class="btn btn-secondary mx-2" id="set_baseline" onclick="setBaseline()"
+                            data-toggle="tooltip" data-placement="top" title="Set current report as baseline">
+                        Set as baseline
+                    </button>
+                    <button hidden class="btn btn-secondary mx-2" id="not_worse_than" onclick="setThresholds()"
+                            data-toggle="tooltip" data-placement="top" title="Set current report as thresholds">
+                        Set as threshold
+                    </button>
+                    <button class="btn btn-secondary" id="show_config_btn"
+                            data-toggle="modal"
+                            data-target="#config_modal"
+                            data-toggle="tooltip" data-placement="top" title="Show config for current test run">
+                        Show config
+                    </button>
+                    {% if test_data['test_status']['status'].lower() not in ['finished', 'error', 'failed',
+                    'success'] %}
+                    <button class="btn btn-danger mx-2" id="stop-test" onclick="stopTest()">
+                        Stop test
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="progressbar-body">
+        {% if test_data['test_status']['status'].lower() not in ['finished', 'error', 'failed', 'success'] %}
+        <uiperformancetestprogress
+                :test_status='{{ test_data.test_status | tojson }}'
+                :project_id="{{ test_data.project_id }}"
+                :test_id="{{ test_data.id }}"
+        ></uiperformancetestprogress>
+        {% endif %}
+    </div>
+    <div class="card-body" id="ui-small-cards">
+        <div class="row">
+            <div class="col">
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["total_pages"] }}</div>
+                    <div class="card-body">Total pages</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["avg_page_load"] }} sec</div>
+                    <div class="card-body">AVG PAGE LOAD</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["thresholds_missed"] }} %</div>
+                    <div class="card-body">MISSED THRESHOLDS RATE</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["loops"] }}</div>
+                    <div class="card-body">LOOPS</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["aggregation"] }}</div>
+                    <div class="card-body">AGGREGATION</div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="processing-table">
+            <div class="col">
+                <div class="card card-sm-table">
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <td class="text-gray-500">Status</td>
+                                <td>{{ test_data['test_status']['status'] }}</td>
+                                <td class="text-gray-500">STARTED</td>
+                                <td id="start_time">{{ test_data["start_time"] }}</td>
+                                <td class="text-gray-500">Environment</td>
+                                <td>{{ test_data["env_type"] }}</td>
+                                <td class="text-gray-500">Browser</td>
+                                <td>{{ test_data["browser"] }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-gray-500">DURATION</td>
+                                <td>{{ test_data["duration"] }}</td>
+                                <td class="text-gray-500">ENDED</td>
+                                <td id="end_time">{{ test_data["end_time"] }}</td>
+                                <td class="text-gray-500">Test type</td>
+                                <td>{{ test_data["test_type"] }}</td>
+                                <td class="text-gray-500">Tags</td>
+                                <td>
+                                    {% for tag in test_data["tags"] %}
+                                    <span class="badge badge-primary">{{ tag }}</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if test_data['test_status']['status'].lower() in ['finished', 'error', 'failed', 'success'] %}
+<div class="card card-12 pb-4 card-table">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-4">
+                <h3 class="text-gray mb-0">Pages results Aggr.: {{ test_data["aggregation"] }} (in ms.)</h3>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-border"
+               id="ui_summary_table"
+               data-url="/api/v1/ui_performance/results/{{ tools.session_project.get() }}/{{ test_data['uid'] }}"
+               data-toggle="table"
+               data-page-size=10
+               data-pagination="true"
+               data-pagination-parts='["pageInfoShort", "pageList"]'>
+            <thead class="thead-light">
+            <tr>
+                <th scope="col" data-sortable="true" data-formatter=trim>Page Name</th>
+                <th scope="col" data-sortable="true" data-field="total">Load time</th>
+                <th scope="col" data-sortable="true" data-field="dom_processing">DOM</th>
+                <th scope="col" data-sortable="true" data-field="tti">TTI</th>
+                <th scope="col" data-sortable="true" data-field="fcp">FCP</th>
+                <th scope="col" data-sortable="true" data-field="lcp">LCP</th>
+                <th scope="col" data-sortable="true" data-field="cls">CLS</th>
+                <th scope="col" data-sortable="true" data-field="tbt">TBT</th>
+                <th scope="col" data-sortable="true" data-field="fvc">FVC</th>
+                <th scope="col" data-sortable="true" data-field="lvc">LVC</th>
+                <th scope="col" data-formatter=reportLink>Report</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
