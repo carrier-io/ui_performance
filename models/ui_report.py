@@ -24,6 +24,7 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
     browser = Column(String(128), unique=False)
     browser_version = Column(String(128), unique=False)
     environment = Column(String(128), unique=False, nullable=True)
+    test_type = Column(String(128), unique=False, nullable=True)
     base_url = Column(String(128), unique=False, nullable=True)
     thresholds_total = Column(Integer, unique=False, nullable=True, default=0)
     thresholds_failed = Column(Integer, unique=False, nullable=True, default=0)

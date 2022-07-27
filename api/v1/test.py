@@ -1,3 +1,4 @@
+import json
 from queue import Empty
 from typing import Union
 
@@ -87,12 +88,14 @@ class API(Resource):
         """ Run test with possible overridden params
         """
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
-        config_only_flag = request.json.pop('type', False)
-        execution_flag = request.json.pop('execution', True)
+        args = request.json
+        config_only_flag = args.pop('type', False)
+        execution_flag = args.pop('execution', True)
+        params = json.loads(args["params"])
 
         test = UIPerformanceTests.query.filter(
             UIPerformanceTests.get_ui_filter(project.id, test_id)
         ).first()
 
-        resp = run_test(test, config_only=config_only_flag, execution=execution_flag)
+        resp = run_test(test, params, config_only=config_only_flag, execution=execution_flag)
         return resp, resp.get('code', 200)
