@@ -117,6 +117,42 @@
     </div>
 </div>
 
+<div class="card card-12 pb-4 card-table">
+    <div class="card-header">
+
+        <h3 class="text-gray mb-0">Overview</h3>
+        <div class="row">
+            <div class="col-6">
+                <ul id="chart-control" class="nav nav-pills">
+                    <li class="nav-item mr-2 mr-md-0 mt-2 ml-2">
+                        <span>Aggregated by {{test_data['aggregation']}} values in seconds. Metric:</span>
+                    </li>
+                    <li class="nav-item mr-2 mr-md-0">
+                        <select class="selectpicker" data-style="btn" id="metric">
+                            <option value="total">Load time</option>
+                            <option value="speed_index">Speed Index</option>
+                            <option value="time_to_first_byte">Time To First Byte</option>
+                            <option value="time_to_first_paint">Time To First Paint</option>
+                            <option value="dom_content_loading">DOM Content Loading</option>
+                            <option value="tti">Time To Interactive</option>
+                            <option value="fcp">First Contentful Paint</option>
+                            <option value="lcp">Largest Contentful Paint</option>
+                            <option value="cls">Cumulative Layout Shift</option>
+                            <option value="tbt">Total Blocking Time</option>
+                            <option value="fvc">First Visual Change</option>
+                            <option value="lvc">Last Visual Change</option>
+                        </select>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="cy"></div>
+    </div>
+</div>
+
 {% if test_data['test_status']['status'].lower() in ['finished', 'error', 'failed', 'success'] %}
 <div class="card card-12 pb-4 card-table">
     <div class="card-header">

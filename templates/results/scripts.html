@@ -1,3 +1,19 @@
 <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
 <script src="{{ url_for('ui_performance.static', filename='js/results.js') }}"></script>
 <script src="{{ url_for('ui_performance.static', filename='js/in_progress.js') }}"></script>
+<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+<script src="{{ url_for('ui_performance.static', filename='vendor/cytoscape/cytoscape-ctxmenu.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='vendor/cytoscape/cytoscape-euler.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='vendor/cytoscape/cytorender.js') }}"></script>
+
+<script>
+$(document).on('vue_init', () => {
+    $(document).ready(function() {
+        renderCy();
+        $('#metric').on("changed.bs.select", function() {
+           renderCy();
+        });
+    });
+})
+</script>
+
