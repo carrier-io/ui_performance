@@ -36,4 +36,5 @@ def run_test(test, params, config_only: bool = False, execution: bool = False) -
     resp['redirect'] = f'/task/{resp["task_id"]}/results'  # todo: where this should lead to?
 
     test.rpc.call.increment_statistics(test.project_id, 'ui_performance_test_runs')
+    resp['result_id'] = report.id  # for test rerun
     return resp

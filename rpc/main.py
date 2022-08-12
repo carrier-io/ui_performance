@@ -6,13 +6,14 @@ from pylon.core.tools import web
 
 from ..models.ui_report import UIReport
 from ..models.ui_result import UIResult
-from ..models.ui_tests import UIPerformanceTests
+from ..models.ui_tests import UIPerformanceTest
 
 
 class RPC:
     @web.rpc('ui_results_or_404')
     @rpc_tools.wrap_exceptions(RuntimeError)
     def ui_results_or_404(self, run_id, report=None):
+        # todo: serialization via pydantic models
         if not report:
             report = UIReport.query.get_or_404(run_id)
         results = UIResult.query.filter_by(report_uid=report.uid).all()
@@ -41,8 +42,8 @@ class RPC:
     @web.rpc('ui_performance_job_type_by_uid')
     @rpc_tools.wrap_exceptions(RuntimeError)
     def job_type_by_uid(self, project_id: int, test_uid: str) -> Optional[str]:
-        test = UIPerformanceTests.query.filter(
-                UIPerformanceTests.get_api_filter(project_id, test_uid)
+        test = UIPerformanceTest.query.filter(
+                UIPerformanceTest.get_api_filter(project_id, test_uid)
         ).first()
         if test:
             return test.job_type

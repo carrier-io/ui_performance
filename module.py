@@ -30,12 +30,10 @@ class Module(module.ModuleModel):
     def __init__(self, context, descriptor):
         self.context = context
         self.descriptor = descriptor
-        #
-        # self.settings = self.descriptor.config
 
     def init(self):
         """ Init module """
-        log.info(f'Initializing module {self.descriptor.name}')
+        log.info('Initializing module')
         init_db()
 
         self.descriptor.init_api()
@@ -65,4 +63,4 @@ class Module(module.ModuleModel):
 
     def deinit(self):  # pylint: disable=R0201
         """ De-init module """
-        log.info(f'De-initializing module {self.descriptor.name}')
+        log.info('De-initializing module')

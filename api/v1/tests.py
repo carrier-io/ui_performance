@@ -6,7 +6,7 @@ from flask_restful import Resource
 from flask import request, make_response
 
 from tools import api_tools
-from ...models.ui_tests import UIPerformanceTests
+from ...models.ui_tests import UIPerformanceTest
 from tools import constants as c
 
 
@@ -21,7 +21,7 @@ class API(Resource):
 
     def get(self, project_id: int):
         reports = []
-        total, res = api_tools.get(project_id, request.args, UIPerformanceTests)
+        total, res = api_tools.get(project_id, request.args, UIPerformanceTest)
         for each in res:
             reports.append(each.to_json())
         return make_response(
@@ -36,8 +36,8 @@ class API(Resource):
             delete_ids = list(map(int, request.args["id[]"].split(',')))
         except TypeError:
             return make_response('IDs must be integers', 400)
-        query_result = UIPerformanceTests.query.filter(
-            and_(UIPerformanceTests.project_id == project.id, UIPerformanceTests.id.in_(delete_ids))
+        query_result = UIPerformanceTest.query.filter(
+            and_(UIPerformanceTest.project_id == project.id, UIPerformanceTest.id.in_(delete_ids))
         ).all()
         for each in query_result:
             each.delete()
@@ -75,7 +75,7 @@ class API(Resource):
         if args.get("region") == "":
             args["region"] = "default"
 
-        test = UIPerformanceTests(project_id=project.id,
+        test = UIPerformanceTest(project_id=project.id,
                                   test_uid=str(uuid4()),
                                   name=args["name"],
                                   bucket=bucket,

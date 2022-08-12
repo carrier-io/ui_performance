@@ -5,7 +5,7 @@ from typing import Union
 from flask import request
 from flask_restful import Resource
 
-from ...models.ui_tests import UIPerformanceTests
+from ...models.ui_tests import UIPerformanceTest
 from ...utils.utils import run_test
 
 
@@ -20,8 +20,8 @@ class API(Resource):
 
     def get(self, project_id: int, test_id: Union[int, str]):
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
-        test = UIPerformanceTests.query.filter(
-            UIPerformanceTests.get_api_filter(project.id, test_id)
+        test = UIPerformanceTest.query.filter(
+            UIPerformanceTest.get_api_filter(project.id, test_id)
         ).first()
         if request.args.get("raw"):
             test = test.api_json()
@@ -54,26 +54,26 @@ class API(Resource):
     #         return errors, 400
     #
     #     test_data['test_parameters'].append(
-    #         UIPerformanceTests(
+    #         UIPerformanceTest(
     #             name="test_type",
     #             default=test_data.pop('test_type'),
     #             description='auto-generated from test type'
     #         ).dict()
     #     )
     #     test_data['test_parameters'].append(
-    #         UIPerformanceTests(
+    #         UIPerformanceTest(
     #             name="env_type",
     #             default=test_data.pop('env_type'),
     #             description='auto-generated from environment'
     #         ).dict()
     #     )
     #
-    #     test_query = UIPerformanceTests.query.filter(UIPerformanceTests.get_api_filter(project_id, test_id))
+    #     test_query = UIPerformanceTest.query.filter(UIPerformanceTest.get_api_filter(project_id, test_id))
     #
     #     schedules = test_data.pop('scheduling', [])
     #
     #     test_query.update(test_data)
-    #     UIPerformanceTests.commit()
+    #     UIPerformanceTest.commit()
     #     test = test_query.one()
     #
     #     test.handle_change_schedules(schedules)
@@ -93,8 +93,8 @@ class API(Resource):
         execution_flag = args.pop('execution', True)
         params = json.loads(args["params"])
 
-        test = UIPerformanceTests.query.filter(
-            UIPerformanceTests.get_ui_filter(project.id, test_id)
+        test = UIPerformanceTest.query.filter(
+            UIPerformanceTest.get_api_filter(project.id, test_id)
         ).first()
 
         resp = run_test(test, params, config_only=config_only_flag, execution=execution_flag)
