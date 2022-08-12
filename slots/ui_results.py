@@ -9,7 +9,8 @@ class Slot:  # pylint: disable=E1101,R0903
         log.info('payload request args: [%s]', payload.request.args)
         result_id = payload.request.args.get('result_id')
         if result_id:
-            test_data = context.rpc_manager.call.ui_results_or_404(result_id)
+            # test_data = context.rpc_manager.call.ui_results_or_404(result_id)
+            test_data = self.results_or_404(result_id)
 
             with context.app.app_context():
                 return self.descriptor.render_template(

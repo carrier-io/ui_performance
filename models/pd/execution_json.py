@@ -31,7 +31,7 @@ class ExecutionParams(BaseModel):
         return temp
 
     @classmethod
-    def from_orm(cls, db_object: 'PerformanceApiTest'):
+    def from_orm(cls, db_object: 'UIPerformanceTest'):
         return cls(**dict(
             cmd=cls._cmd_template.format(
                 entrypoint=db_object.entrypoint,

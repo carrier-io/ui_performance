@@ -25,7 +25,7 @@ class API(Resource):
         res = []
 
         for report in reports:
-            data = self.module.context.rpc_manager.call.ui_results_or_404(report.id, report)
+            data = self.module.results_or_404(report.id, report)
             res.append(data)
 
         for each in res:

@@ -20,7 +20,8 @@ from sqlalchemy import Column, Integer, String, JSON, ARRAY, and_
 
 from tools import db_tools, db, rpc_tools, constants as c, secrets_tools
 
-from pylon.plugins.ui_performance.models.pd.execution_json import ExecutionParams, CcEnvVars
+from .pd.execution_json import ExecutionParams, CcEnvVars
+from .pd.test_parameters import UITestParams
 
 
 class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
@@ -152,7 +153,7 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
 
     # def configure_execution_json(self, output='cc', browser=None, test_type=None, params=None, env_vars=None, reporting=None,
     #                              customization=None, cc_env_vars=None, parallel=None, execution=False):
-    def configure_execution_json(self, output='cc', browser=None, execution=False):
+    def configure_execution_json(self, execution=False): # todo: browser override here?
 
         # reports = []
         # for report in self.reporting:
