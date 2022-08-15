@@ -4,17 +4,29 @@ from uuid import uuid4
 from pydantic import BaseModel, validator, AnyUrl, parse_obj_as, root_validator, constr
 import string
 
-from ...constants import JOB_CONTAINER_MAPPING
-
 from tools import rpc_tools
+
+from ...constants import RUNNER_MAPPING
 
 
 class TestOverrideable(BaseModel):
     parallel_runners: Optional[int]
     location: str = 'default'
+    browser: str = 'Chrome_undefined'
+    loops: int
+    aggregation: str
     env_vars: dict = {}
     customization: dict = {}
     cc_env_vars: dict = {}
+
+    @root_validator(pre=True, allow_reuse=True)
+    def empty_str_to_none(cls, values):
+        removed = []
+        for k in list(values.keys()):
+            if values[k] == '':
+                removed.append(k)
+                del values[k]
+        return values
 
     @validator('customization')
     def validate_customization(cls, value: dict):
@@ -23,6 +35,17 @@ class TestOverrideable(BaseModel):
                 assert all((k, v)), 'All fields must be filled'
             else:
                 del value[k]
+        return value
+
+    @validator('env_vars')
+    def validate_env_vars(cls, value: dict):
+        value['ENV'] = value.get('ENV', 'Default')
+        return value
+
+    @validator('aggregation')
+    def validate_aggregation(cls, value: str):
+        valid_aggregations = ['max', 'min', 'avg']
+        assert value in valid_aggregations, f'Only following aggregations are supported: {valid_aggregations}'
         return value
 
 
@@ -41,22 +64,13 @@ class TestCommon(TestOverrideable):
     source: dict
 
     @root_validator
-    def set_uuid(cls, values):
+    def set_uuid(cls, values: dict):
         if not values.get('test_uid'):
             values['test_uid'] = str(uuid4())
         return values
 
-    @root_validator(pre=True, allow_reuse=True)
-    def empty_str_to_none(cls, values):
-        removed = []
-        for k in list(values.keys()):
-            if values[k] == '':
-                removed.append(k)
-                del values[k]
-        return values
-
     @validator('name', 'test_type', 'env_type')
-    def check_allowed_chars(cls, value):
+    def check_allowed_chars(cls, value: str):
         try:
             int(value[0])
             assert False, 'Can not start with a number'
@@ -68,15 +82,15 @@ class TestCommon(TestOverrideable):
         return value
 
     @validator('runner')
-    def validate_runner(cls, value):
-        assert value in JOB_CONTAINER_MAPPING.keys(), \
-            "Runner version is not supported. Available versions: {}".format(
-                list(JOB_CONTAINER_MAPPING.keys())
+    def validate_runner(cls, value: str):
+        assert value in RUNNER_MAPPING.keys(), \
+            "Runner not supported. Available runners: {}".format(
+                list(RUNNER_MAPPING.keys())
             )
         return value
 
     @validator('source')
-    def validate_sources(cls, value: dict, values):
+    def validate_sources(cls, value: dict):
         validated = rpc_tools.RpcMixin().rpc.call.parse_source(value)
         return {
             'name': value['name'],

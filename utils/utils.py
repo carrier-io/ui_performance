@@ -93,7 +93,7 @@ def parse_test_data(project_id: int, request_data: dict,
     common_params = request_data.pop('common_params', {})
 
     try:
-        test_data = rpc.call.backend_performance_test_create_common_parameters(
+        test_data = rpc.call.ui_performance_test_create_common_parameters(
             project_id=project_id,
             test_params=common_params,
             **common_kwargs

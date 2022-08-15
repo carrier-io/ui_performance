@@ -22,6 +22,7 @@ from tools import db_tools, db, rpc_tools, constants as c, secrets_tools
 
 from .pd.execution_json import ExecutionParams, CcEnvVars
 from .pd.test_parameters import UITestParams
+from ..constants import RUNNER_MAPPING
 
 
 class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
@@ -73,13 +74,11 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
 
     @property
     def container(self):
-        raise NotImplementedError()
-        # return JOB_CONTAINER_MAPPING.get(self.runner, {}).get('container')
+        return RUNNER_MAPPING.get(self.runner)
 
     @property
     def job_type(self):
-        raise NotImplementedError()
-        # return JOB_CONTAINER_MAPPING.get(self.runner, {}).get('job_type')
+        return 'observer'
 
     @property
     def default_params_mapping(self) -> dict:
@@ -229,7 +228,7 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         #        f'getcarrier/control_tower:{c.CURRENT_RELEASE} ' \
         #        f'--test_id {self.test_uid}'
 
-    def to_json(self, exclude_fields: tuple = (), keep_custom_test_parameters: bool = True) -> dict:
+    def to_json(self, exclude_fields: tuple = (), keep_custom_test_parameters: bool = True, with_schedules: bool = False) -> dict:
         test = super().to_json(exclude_fields=exclude_fields)
         if 'job_type' not in exclude_fields:
             test['job_type'] = self.job_type
@@ -241,14 +240,23 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
             test['test_parameters'] = self.all_test_parameters.exclude_params(
                 exclude_fields
             ).dict()['test_parameters']
+        if with_schedules and 'schedules' not in exclude_fields:
+            schedules = test.pop('schedules', [])
+            if schedules:
+                try:
+                    test['schedules'] = self.rpc.timeout(
+                        2).scheduling_ui_performance_load_from_db_by_ids(schedules)
+                except Empty:
+                    test['schedules'] = []
         return test
 
-    def api_json(self):
+    def api_json(self, with_schedules: bool = False):
         return self.to_json(
             exclude_fields=tuple(
                 tp.name for tp in self.default_test_parameters.test_parameters
                 if tp.name != 'test_name'  # leave test_name here
             ),
-            keep_custom_test_parameters=True  # explicitly
+            keep_custom_test_parameters=True,  # explicitly
+            with_schedules=with_schedules
         )
 
