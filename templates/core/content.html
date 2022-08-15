@@ -1,148 +1,130 @@
-<div class="d-flex">
-    <div class="card card-x card-table-sm">
-        <div class="card-header">
-            <div class="row">
-                <div class="col-4">
-                    <h3>UI tests</h3>
-                </div>
-                <div class="col-8">
+{% set modal_id = 'create_modal' %}
+    <div class="flex-container">
+        <div class="flex-item-2">
+            <Table-Card
+                    @register="register"
+                    instance_name="table_tests"
+
+                    header='UI tests'
+                    :table_attributes="{
+                        'data-url': '/api/v1/ui_performance/tests/{{ tools.session_project.get() }}',
+                        'data-page-size': 5,
+                    }"
+                    container_classes="h-100"
+            >
+                <template #actions="{master}">
                     <div class="d-flex justify-content-end">
                         <button type="button" class="btn btn-32 btn-secondary" data-toggle="modal"
-                                data-target="#createUITestModal"><i class="fas fa-plus"></i></button>
-                        <button type="button" class="btn btn-32 btn-secondary" onclick="refreshTable('tests-list')"><i
-                                class="fas fa-sync"></i></button>
-                        <button type="button" class="btn btn-32 btn-secondary"><i
-                                class="fas fa-filter"></i></button>
-                        <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-tag"></i></button>
-                        <button type="button" class="btn btn-32 btn-secondary" onclick="deleteTests()"><i
-                                class="fas fa-trash-alt"></i></button>
+                                data-target="#{{ modal_id }}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button type="button" class="btn btn-32 btn-secondary" @click="master.table_action('refresh')">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <button type="button" class="btn btn-32 btn-secondary">
+                            <i class="fas fa-filter"></i>
+                        </button>
+{#                        <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-tag"></i></button>#}
+                        <button type="button" class="btn btn-32 btn-secondary" id="delete_tests"><i
+                                class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <table class="table table-borderless"
-                   id="tests-list"
-                   data-toggle="table"
-                   data-side-pagination="server"
-                   data-url="/api/v1/ui_performance/tests/{{ tools.session_project.get() }}"
-                   data-page-size=5
-                   data-unique-id="id"
-                   data-pagination="true"
-                   data-pagination-parts='["pageInfoShort", "pageList"]'>
-                <thead class="thead-light">
-                <tr>
+                </template>
+                <template #table_headers>
                     <th scope="col" data-checkbox="true"></th>
                     <th data-visible="false" data-field="id">index</th>
-                    <th scope="col" data-sortable="true" data-cell-style="nameStyle" data-field="name">Name</th>
-                    <th scope="col" data-sortable="true" data-cell-style="nameStyle" data-field="test_uid">UUID
+                    <th scope="col" data-sortable="true"
+                        data-cell-style="test_formatters.name_style"
+                        data-field="name"
+                    >
+                        Name
                     </th>
-                    <th scope="col" data-sortable="true" data-cell-style="nameStyle" data-field="entrypoint">
+                    <th scope="col" data-sortable="true"
+                        data-cell-style="test_formatters.name_style"
+                        data-field="test_uid"
+                    >
+                        UUID
+                    </th>
+                    <th scope="col" data-sortable="true"
+                        data-cell-style="test_formatters.name_style"
+                        data-field="entrypoint"
+                    >
                         Entrypoint
                     </th>
-                    <th scope="col" data-align="center" data-sortable="true" data-formatter=backendLgFormatter
-                        data-field="job_type">Tool
+                    <th scope="col" data-align="center" data-sortable="true"
+                        data-formatter=test_formatters.job_type
+                        data-field="job_type"
+                    >
+                        Tool
                     </th>
-                    <th scope="col" data-align="right" data-cell-style="cellStyle"
-                        data-formatter=uiTestActionFormatter>Actions
+                    <th scope="col" data-align="right"
+                        data-cell-style="test_formatters.cell_style"
+                        data-formatter=test_formatters.actions
+                        data-events="test_formatters.action_events"
+                    >
+                        Actions
                     </th>
-                </tr>
-                </thead>
-            </table>
+                </template>
+            </Table-Card>
+        </div>
+        <div class="flex-item-2">
+            {% include 'ui_performance:core/thresholds.html' %}
         </div>
     </div>
-    <div class="card card-x card-table-sm">
-        <div class="card-header">
-            <div class="row">
-                <div class="col-4">
-                    <h3>Thresholds</h3>
-                </div>
-                <div class="col-8">
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-32 btn-secondary" data-toggle="modal"
-                                data-target="#createUIThresholdModal"><i class="fas fa-plus"></i></button>
-                        <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <table class="table table-borderless"
-                   id="threshold-list"
-                   data-toggle="table"
-                   data-side-pagination="server"
-                   data-url="/api/v1/ui_performance/thresholds/{{ tools.session_project.get() }}"
-                   data-page-size=5
-                   data-unique-id="id"
-                   data-virtual-scroll="true"
-                   data-pagination-parts='["pageInfoShort", "pageList"]'
-            >
-                <thead class="thead-light">
-                <tr>
-                    <th scope="col" data-checkbox="true"></th>
-                    <th data-visible="false" data-field="id">index</th>
-                    <th scope="col" data-sortable="true" data-field="test">Test</th>
-                    <th scope="col" data-sortable="true" data-field="environment">Env</th>
-                    <th scope="col" data-sortable="true" data-field="scope">Scope</th>
-                    <th scope="col" data-sortable="true" data-formatter=ruleFormatter>Rule</th>
-                    <th scope="col" data-sortable="true" data-field="value">Value</th>
-                    <th scope="col" data-formatter=thresholdsActionFormatter>Actions</th>
-                </tr>
-                </thead>
-            </table>
-        </div>
-    </div>
-</div>
-<div class="card card-12 card-table-sm">
-    <div class="card-header">
-        <div class="row">
-            <div class="col-4">
-                <h3>Results</h3>
-            </div>
-            <div class="col-8">
-                <div class="d-flex justify-content-end">
-                    <button type="button" class="btn btn-32 btn-secondary" onclick="refreshTable('results-list')"><i
-                            class="fas fa-sync"></i></button>
-                    <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-filter"></i></button>
-                    <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-tag"></i></button>
-                    <button type="button" class="btn btn-32 btn-secondary" onclick="deleteReports()"><i
-                            class="fas fa-trash-alt"></i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card-body">
-        <table class="table table-borderless"
-               id="results-list"
-               data-toggle="table"
-               data-side-pagination="server"
-               data-url="/api/v1/ui_performance/report_stats/{{ tools.session_project.get() }}"
-               data-page-size=5
-               data-unique-id="id"
-               data-pagination="true"
-               data-pagination-parts='["pageInfoShort", "pageList"]'>
-            <thead class="thead-light">
-            <tr>
-                <th scope="col" data-checkbox="true"></th>
-                <th data-visible="false" data-field="id">index</th>
-                <th scope="col" data-sortable="true" data-field="name" data-formatter=createLinkToUIReport>Name</th>
-                <th scope="col" data-sortable="true" data-field="start_time">Date</th>
-                <th scope="col" data-sortable="true" data-field="duration">Duration</th>
-                <th scope="col" data-sortable="true" data-field="test_type">Test type</th>
-                <th scope="col" data-sortable="true" data-field="env_type">Env</th>
-                <th scope="col" data-sortable="true" data-field="avg_page_load">AVG Page time</th>
-                <th scope="col" data-sortable="true" data-field="thresholds_missed">Fail Rate</th>
-                <th scope="col" data-sortable="true" data-field="browser">Browser</th>
-                <th scope="col" data-sortable="true" data-field="tags">Tags</th>
-                <th scope="col" data-sortable="true" data-field="test_status.status"
-                    data-formatter="reportsStatusFormatter">Status
-                </th>
-            </tr>
-            </thead>
-        </table>
-    </div>
-</div>
 
-{% include 'ui_performance:create.html' %}
-{% include 'ui_performance:runtest.html' %}
-{% include 'ui_performance:thresholds.html' %}
+    <Table-Card
+            @register="register"
+            instance_name="table_results"
+
+            header='Results'
+            :table_attributes="{
+                'data-url': '/api/v1/ui_performance/reports/{{ tools.session_project.get() }}',
+            }"
+            container_classes="mt-3"
+    >
+        <template #actions="{master}">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-32 btn-secondary" @click="master.table_action('refresh')">
+                    <i class="fas fa-sync"></i>
+                </button>
+{#                <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-filter"></i></button>#}
+{#                <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-tag"></i></button>#}
+                <button type="button" class="btn btn-32 btn-secondary" id="delete_results">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </template>
+        <template #table_headers>
+            <th scope="col" data-checkbox="true"></th>
+            <th data-visible="false" data-field="id">index</th>
+            <th scope="col" data-sortable="true" data-field="name"
+                data-formatter=report_formatters.createLinkToTest
+            >
+                Name
+            </th>
+            <th scope="col" data-sortable="true" data-field="start_time">Date</th>
+            <th scope="col" data-sortable="true" data-field="duration">Duration</th>
+            <th scope="col" data-sortable="true" data-field="type">Test Type</th>
+            <th scope="col" data-sortable="true" data-field="environment">Env</th>
+            <th scope="col" data-sortable="true" data-field="page_time">Avg Page Time</th>
+            <th scope="col" data-sortable="true" data-field="failure_rate">Fail Rate</th>
+            <th scope="col" data-sortable="true" data-field="failure_rate">Browser</th>
+            <th scope="col" data-sortable="true" data-field="tags">Tags</th>
+            <th scope="col" data-sortable="true" data-field="test_status"
+                data-formatter="report_formatters.reportsStatusFormatter"
+            >
+                Status
+            </th>
+        </template>
+    </Table-Card>
+
+    {% with modal_id=modal_id, runners=runners %}
+        {% include 'ui_performance:core/create.html' %}
+    {% endwith %}
+    {% include 'ui_performance:core/runtest.html' %}
+    <Docker-Command-Modal
+        @register="register"
+        instance_name="docker_command"
+        modal_id="docker_command_modal"
+    >
+    </Docker-Command-Modal>
