@@ -186,7 +186,7 @@ const CustomizationItem = {
 }
 const Customization = {
     delimiters: ['[[', ']]'],
-    props: ['customization', 'errors'],
+    props: ['customization', 'errors', 'modelValue'],
     emits: ['update:modelValue'],
     components: {
         CustomizationItem: CustomizationItem
@@ -442,25 +442,29 @@ const TestCreateModal = {
                     <div class="collapse row pt-4" id="advancedBackend"
                         ref="advanced_params"
                     >
-                        <div class="col">
-                            <Customization
-                                v-model="customization"
-                                ref="customization_component"
-                                :errors="errors.customization"
-                            ></Customization>
-                            <div class="card card-x card-row-1" id="splitCSV">
-                                <div class="card-header">
-                                    <div class="d-flex flex-row">
-                                        <div class="flex-fill">
-                                            <h9 class="flex-grow-1">Split CSV</h9>
-                                            <p>
-                                                <h13>Distribute CSV data across load generators</h13>
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <button type="button" class="btn btn-32 btn-action mt-1"
-                                                    onclick="addCSVSplit('splitCSV')"><i class="fas fa-plus"></i>
-                                            </button>
+                        <div class="col row">
+                            <div class="col-6">
+                                <Customization
+                                    v-model="customization"
+                                    ref="customization_component"
+                                    :errors="errors.customization"
+                                ></Customization>
+                            </div>
+                            <div class="col-6">
+                                <div class="card card-x card-row-1" id="splitCSV">
+                                    <div class="card-header">
+                                        <div class="d-flex flex-row">
+                                            <div class="flex-fill">
+                                                <h9 class="flex-grow-1">Split CSV</h9>
+                                                <p>
+                                                    <h13>Distribute CSV data across load generators</h13>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-32 btn-action mt-1"
+                                                        onclick="addCSVSplit('splitCSV')"><i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
