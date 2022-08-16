@@ -14,9 +14,7 @@ class Slot:  # pylint: disable=E1101,R0903
         with context.app.app_context():
             return self.descriptor.render_template(
                 'core/content.html',
-                runners={
-                    '': list(RUNNER_MAPPING.keys()),
-                },
+                runners=list(RUNNER_MAPPING.keys()),
                 locations={
                     'public_regions': public_regions,
                     'project_regions': project_regions

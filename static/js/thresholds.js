@@ -1,3 +1,4 @@
+const api_th_base_url = '/api/v1/ui_performance'
 const ThresholdModal = {
     props: ['modal_id', 'thresholds_table_component_name', 'tests_table_component_name'],
     delimiters: ['[[', ']]'],
@@ -214,7 +215,7 @@ const ThresholdModal = {
             await this.handle_fetch_env()
         },
         async handle_fetch_env() {
-            const resp = await fetch(`/api/v1/backend_performance/environments/${getSelectedProjectId()}?` +
+            const resp = await fetch(`${api_th_base_url}/environments/${getSelectedProjectId()}?` +
                 $.param({name: this.test})
             )
             if (resp.ok) {
@@ -232,7 +233,7 @@ const ThresholdModal = {
             await this.handle_fetch_scope()
         },
         async handle_fetch_scope() {
-            const resp = await fetch(`/api/v1/backend_performance/requests/${getSelectedProjectId()}?` +
+            const resp = await fetch(`${api_th_base_url}/requests/${getSelectedProjectId()}?` +
                 $.param({name: this.test, environment: this.environment})
             )
             if (resp.ok) {
@@ -245,7 +246,7 @@ const ThresholdModal = {
             this.errors = {}
             const {test, environment, scope, target, aggregation, comparison, value} = this
             this.is_fetching = true
-            const resp = await fetch(`/api/v1/backend_performance/thresholds/${getSelectedProjectId()}`, {
+            const resp = await fetch(`${api_th_base_url}/thresholds/${getSelectedProjectId()}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({test, environment, scope, target, aggregation, comparison, value}),
@@ -263,7 +264,7 @@ const ThresholdModal = {
             this.errors = {}
             const {test, environment, scope, target, aggregation, comparison, value, id} = this
             this.is_fetching = true
-            const resp = await fetch(`/api/v1/backend_performance/thresholds/${getSelectedProjectId()}/${id}`, {
+            const resp = await fetch(`${api_th_base_url}/thresholds/${getSelectedProjectId()}/${id}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({test, environment, scope, target, aggregation, comparison, value, id}),
@@ -309,7 +310,7 @@ register_component('ThresholdModal', ThresholdModal)
 
 
 const threshold_delete = ids => {
-    const url = `/api/v1/backend_performance/thresholds/${getSelectedProjectId()}?` + $.param({"id[]": ids})
+    const url = `${api_th_base_url}/thresholds/${getSelectedProjectId()}?` + $.param({"id[]": ids})
     fetch(url, {
         method: 'DELETE'
     }).then(response => response.ok && vueVm.registered_components.table_thresholds?.table_action('refresh'))

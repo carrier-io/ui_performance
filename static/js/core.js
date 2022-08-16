@@ -1,4 +1,4 @@
-const api_base_url = 'api/v1/ui_performance'
+const api_base_url = '/api/v1/ui_performance'
 var test_formatters = {
     job_type(value, row, index) {
         switch (value) {
@@ -373,26 +373,14 @@ const TestCreateModal = {
                                     :class="{ 'is-invalid': errors?.runner }"
                                 >
                                     
-                                    <optgroup v-for='runner_group in Object.keys(runners).reverse()' :label="runner_group">
-                                        <option v-for='runner in runners[runner_group]' :value="runner.version">
-                                            [[ runner.name || runner_group + " " + runner.version ]]
-                                        </option>
-                                    </optgroup>
+                                    <option v-for='runner in runners' :value="runner">
+                                        [[ runner ]]
+                                    </option>
                                 </select>
                                 </div>
         
                                 
                                 <div class="invalid-feedback">[[ get_error_msg('runner') ]]</div>
-                                <label class="mb-0 mt-1 w-100 d-flex align-items-center custom-checkbox"
-                                    v-if="is_gatling_selected && active_source_tab === 'artifact'"
-                                    >
-                                        <input type="checkbox" class="mr-2"
-                                            v-model='compile_tests'
-                                            :class="{ 'is-invalid': errors?.compile_tests }"
-                                            >
-                                        <div class="invalid-feedback">[[ get_error_msg('compile_tests') ]]</div>
-                                        <h9> Compile tests for Gatling </h9>
-                                    </label>
                             </div>
                         </div>
                         <div class="col">
@@ -500,7 +488,9 @@ const TestCreateModal = {
     computed: {
         default_runner() {
             return this.$props.runners &&
-                this.$props.runners[Object.keys(this.$props.runners).reverse()[0]][0].version
+                this.$props.runners.includes('Sitespeed (browsertime)') ?
+                'Sitespeed (browsertime)' :
+                this.$props.runners[0]
                 || null
         },
         test_parameters() {
@@ -525,11 +515,6 @@ const TestCreateModal = {
                 return undefined
             }
         },
-        is_gatling_selected() {
-            return Boolean(
-                this.$props.runners.Gatling?.find(i => i.version === this.runner) !== undefined
-            )
-        }
     },
     watch: {
         errors(newValue,) {
@@ -541,20 +526,9 @@ const TestCreateModal = {
                     this.source.setError(newValue.source) :
                     this.source.clearErrors()
 
-                let quality_gate_error
                 newValue.integrations ?
-                    this.integrations?.setError(newValue.integrations.filter(i => {
-                        if (i.loc.includes('reporters_quality_gate')) {
-                            quality_gate_error = i
-                            return false
-                        }
-                        return true
-                    })) :
+                    this.integrations?.setError(newValue.integrations) :
                     this.integrations?.clearErrors()
-                if (quality_gate_error) {
-                    this.errors.quality_gate = quality_gate_error
-                    $(this.$refs.advanced_params).collapse('show')
-                }
 
                 newValue.scheduling ?
                     this.scheduling?.setError(newValue.scheduling) :
@@ -568,11 +542,6 @@ const TestCreateModal = {
                 this.scheduling?.clearErrors()
             }
         },
-        is_gatling_selected(newValue) {
-            if (!newValue) {
-                this.compile_tests = false
-            }
-        }
     },
     methods: {
         get_error_msg(field_name) {
@@ -601,11 +570,6 @@ const TestCreateModal = {
                 test_parameters: this.test_parameters.get(),
                 integrations: this.integrations?.get() || {},
                 scheduling: this.scheduling?.get() || [],
-            }
-            if (this.quality_gate.active) {
-                data.integrations.reporters = {...data.integrations.reporters, quality_gate: {
-                    failed_thresholds_rate: this.quality_gate.failed_thresholds_rate
-                }}
             }
             let csv_files = {}
             $("#splitCSV .flex-row").slice(1,).each(function (_, item) {
@@ -692,16 +656,11 @@ const TestCreateModal = {
                 customization: {},
                 cc_env_vars: {},
 
-                compile_tests: false,
                 errors: {},
 
                 advanced_params_icon: 'fas fa-chevron-down',
                 mode: 'create',
                 active_source_tab: undefined,
-                quality_gate: {
-                    active: false,
-                    failed_thresholds_rate: 20
-                },
             }
         },
         set(data) {
@@ -732,11 +691,6 @@ const TestCreateModal = {
             this.test_parameters.set(test_parameters_filtered)
             this.source.set(source)
 
-            try {
-                this.quality_gate.failed_thresholds_rate = integrations.reporters.quality_gate.failed_thresholds_rate
-                this.quality_gate.active = true
-                $(this.$refs.advanced_params).collapse('show')
-            } catch (e) {}
             integrations && this.integrations.set(integrations)
             scheduling && this.scheduling.set(scheduling)
 
@@ -876,12 +830,7 @@ const TestRunModal = {
                 customization: {},
                 cc_env_vars: {},
 
-                compile_tests: false,
                 errors: {},
-                quality_gate: {
-                    active: false,
-                    failed_thresholds_rate: 20
-                },
             }
         },
         set(data) {
@@ -895,10 +844,6 @@ const TestRunModal = {
 
             // special fields
             this.test_parameters.set(test_parameters)
-            try {
-                this.quality_gate.failed_thresholds_rate = integrations.reporters.quality_gate.failed_thresholds_rate
-                this.quality_gate.active = true
-            } catch (e) {}
             this.integrations.set(integrations)
             this.show()
         },
@@ -920,11 +865,6 @@ const TestRunModal = {
         get_data() {
             const test_params = this.test_parameters.get()
             const integrations = this.integrations.get()
-            if (this.quality_gate.active) {
-                integrations.reporters = {...integrations.reporters, quality_gate: {
-                    failed_thresholds_rate: this.quality_gate.failed_thresholds_rate
-                }}
-            }
             const name = test_params.find(i => i.name === 'test_name')
             const test_type = test_params.find(i => i.name === 'test_type')
             const env_type = test_params.find(i => i.name === 'env_type')
@@ -984,19 +924,9 @@ const TestRunModal = {
                 newValue.test_parameters ?
                     this.test_parameters.setError(newValue.test_parameters) :
                     this.test_parameters.clearErrors()
-                let quality_gate_error
                 newValue.integrations ?
-                    this.integrations?.setError(newValue.integrations.filter(i => {
-                        if (i.loc.includes('reporters_quality_gate')) {
-                            quality_gate_error = i
-                            return false
-                        }
-                        return true
-                    })) :
+                    this.integrations?.setError(newValue.integrations) :
                     this.integrations?.clearErrors()
-                if (quality_gate_error) {
-                    this.errors.quality_gate = quality_gate_error
-                }
             } else {
                 this.test_parameters.clearErrors()
                 this.integrations.clearErrors()
