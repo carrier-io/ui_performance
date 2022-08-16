@@ -42,6 +42,16 @@ class Module(module.ModuleModel):
 
         self.descriptor.init_blueprint()
 
+        try:
+            theme.register_section(
+                "performance",
+                "Performance",
+                kind="holder",
+                location="left",
+            )
+        except:
+            ...
+
         theme.register_subsection(
             "performance", "ui",
             "UI",

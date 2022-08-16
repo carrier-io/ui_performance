@@ -1,12 +1,13 @@
 const api_base_url = 'api/v1/ui_performance'
 var test_formatters = {
     job_type(value, row, index) {
-        if (row.job_type === "perfmeter") {
-            return '<img src="/design-system/static/assets/ico/jmeter.png" width="20">'
-        } else if (row.job_type === "perfgun") {
-            return '<img src="/design-system/static/assets/ico/gatling.png" width="20">'
-        } else {
-            return value
+        switch (value) {
+            case 'browsertime':
+                return '<img src="/design-system/static/assets/ico/sitespeed.png" width="20">'
+            case 'lighthouse':
+                return '<img src="/design-system/static/assets/ico/lighthouse.png" width="20">'
+            default:
+                return value
         }
     },
 
@@ -57,13 +58,13 @@ var test_formatters = {
             }
         }
     },
-    cell_style(value, row, index) {
-        return {
-            css: {
-                "min-width": "165px"
-            }
-        }
-    },
+    // cell_style(value, row, index) {
+    //     return {
+    //         css: {
+    //             "min-width": "165px"
+    //         }
+    //     }
+    // },
     action_events: {
         "click .test_run": function (e, value, row, index) {
             console.log('test_run', row)
@@ -261,7 +262,6 @@ const TestCreateModal = {
     delimiters: ['[[', ']]'],
     components: {
         Customization: Customization,
-        QualityGate: QualityGate
     },
     props: ['modal_id', 'runners', 'test_params_id', 'source_card_id', 'locations'],
     template: `
@@ -477,13 +477,6 @@ const TestCreateModal = {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col">
-                            <QualityGate
-                                v-model:failed_thresholds_rate="quality_gate.failed_thresholds_rate"
-                                v-model:active="quality_gate.active"
-                                :error="errors.quality_gate"
-                            ></QualityGate>
                         </div>
                     </div>
                 </div>
@@ -755,8 +748,8 @@ const TestCreateModal = {
             Object.assign(this.$data, this.initial_state())
             this.test_parameters.clear()
             this.source.clear()
-            this.integrations.clear()
-            this.scheduling.clear()
+            this.integrations?.clear()
+            this.scheduling?.clear()
             $('#backend_parallel').text(this.parallel_runners)
             $('#backend_cpu').text(this.cpu_quota)
             $('#backend_memory').text(this.memory_quota)
@@ -811,9 +804,6 @@ function addCSVSplit(id, key = "", is_header = "") {
 const TestRunModal = {
     delimiters: ['[[', ']]'],
     props: ['test_params_id', 'instance_name_prefix'],
-    components: {
-        QualityGate: QualityGate
-    },
     template: `
         <div class="modal modal-base fixed-left fade shadow-sm" tabindex="-1" role="dialog" id="runTestModal">
             <div class="modal-dialog modal-dialog-aside" role="document">
@@ -846,17 +836,6 @@ const TestRunModal = {
                             ref="locations"
                         ></Locations>
                         <slot name="integrations"></slot>
-                        <div class="section">
-                            <div class="row">
-                                <div class="col-6">
-                                    <QualityGate
-                                        v-model:failed_thresholds_rate="quality_gate.failed_thresholds_rate"
-                                        v-model:active="quality_gate.active"
-                                        :error="errors.quality_gate"
-                                    ></QualityGate>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
