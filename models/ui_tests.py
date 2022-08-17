@@ -82,7 +82,7 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
 
     @property
     def default_params_mapping(self) -> dict:
-        return {}
+        return {"test_name": self.name}
 
     @property
     def default_test_parameters(self) -> UITestParams:

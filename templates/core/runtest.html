@@ -17,7 +17,7 @@
     </template>
     <template #integrations>
         {{ template_slot("integrations_ui_performance_content", payload={
-            'instance_name_prefix': modal_id
+            'instance_name_prefix': '%s_' | format(modal_id)
         }) | safe }}
     </template>
 </Test-Run-Modal>

@@ -35,8 +35,9 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
         # test_type=params[2]["default"],
         test_type=test_parameter_value_by_name(test.test_parameters, 'test_type'),
         loops=test.loops,
-        aggregation=test.aggregation
+        aggregation=test.aggregation,
         # todo: no test_uid?
+        test_config=test.api_json()
     )
     report.insert()
     event["cc_env_vars"]["REPORT_ID"] = str(report.uid)

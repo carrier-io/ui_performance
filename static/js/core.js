@@ -336,9 +336,9 @@ const TestCreateModal = {
                                             <h13>Tag to group tests by type</h13>
                                         </p>
                                         <div class="custom-input mb-3 mt-1"
-                                            :class="{ 'invalid-input': errors?.test_type }">
-                                            <input type="text"
-                                                placeholder="Test Type"
+                                            :class="{ 'invalid-input': errors?.test_type }"
+                                        >
+                                            <input type="text" placeholder="Test Type"
                                                 v-model='test_type'
                                             >
                                             <span class="input_error-msg">[[ get_error_msg('test_type') ]]</span>
@@ -352,17 +352,18 @@ const TestCreateModal = {
                                             <h13>Tag to group tests by env</h13>
                                         </p>
                                         <div class="custom-input mb-3 mt-1"
-                                            :class="{ 'invalid-input': errors?.env_type }">
+                                            :class="{ 'invalid-input': errors?.env_type }"
+                                        >
                                             <input type="text"
                                                 placeholder="Test Environment"
                                                 v-model='env_type'
-                                                >
+                                            >
                                             <span class="input_error-msg">[[ get_error_msg('env_type') ]]</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group" >
+                            <div class="form-group">
                                 <p class="font-h5 font-semibold">Test runner</p>
                                 <p>
                                     <h13>Choose the runner for the test.</h13>
@@ -378,11 +379,50 @@ const TestCreateModal = {
                                     </option>
                                 </select>
                                 </div>
-        
-                                
                                 <div class="invalid-feedback">[[ get_error_msg('runner') ]]</div>
                             </div>
+                            
+                            <div class="row">
+                                <div class="form-group col-6">
+                                    <p class="font-h5 font-semibold">Number of loops</p>
+                                    <p>
+                                        <h13>How many times to repeat scenario execution.</h13>
+                                    </p>
+                                    <div class="custom-input mb-3 mt-1"
+                                        :class="{ 'invalid-input': errors?.loops }"
+                                    >
+                                        <input type="number" class="form-control form-control-alternative"
+                                               placeholder="# of loops" 
+                                               v-model="loops"
+                                               :class="{ 'is-invalid': errors?.loops }"
+                                        >
+                                        <div class="invalid-feedback">[[ get_error_msg('loops') ]]</div>
+                                    </div>
+                                </div>
+                                    
+                                <div class="form-group col-6">
+                                    <p class="font-h5 font-semibold">Aggregation</p>
+                                    <p>
+                                        <h13>Aggregation rule</h13>
+                                    </p>
+                                    <div class="custom-input w-100-imp select-validation"
+                                        :class="{ 'is-invalid': errors?.aggregation, 'invalid-select': errors?.aggregation }"
+                                    >
+                                        <select class="selectpicker bootstrap-select__b mt-1" data-style="btn" 
+                                            v-model="aggregation"
+                                        >
+                                            <option value="max">Max</option>
+                                            <option value="min">Min</option>
+                                            <option value="avg">Avg</option>
+                                        </select>
+                                    </div>
+                                    <div class="invalid-feedback select_error-msg">[[ get_error_msg('aggregation') ]]</div>
+                                </div>
+                            </div>
                         </div>
+                               
+                            
+                                
                         <div class="col">
                             <slot name='sources'></slot>
                             
@@ -419,7 +459,7 @@ const TestCreateModal = {
                 
                 <slot name='params_table'></slot>
                 <slot name='integrations'></slot>
-                <slot name='scheduling'></slot>
+                <slot name='schedules'></slot>
                 
 
                 <div class="section mt-3" @click="handle_advanced_params_icon">
@@ -511,7 +551,7 @@ const TestCreateModal = {
                 return undefined
             }
         },
-        scheduling() {
+        schedules() {
             try {
                 return SchedulingSection.Manager()
             } catch (e) {
@@ -534,16 +574,16 @@ const TestCreateModal = {
                     this.integrations?.setError(newValue.integrations) :
                     this.integrations?.clearErrors()
 
-                newValue.scheduling ?
-                    this.scheduling?.setError(newValue.scheduling) :
-                    this.scheduling?.clearErrors()
+                newValue.schedules ?
+                    this.schedules?.setError(newValue.schedules) :
+                    this.schedules?.clearErrors()
 
                 newValue.customization && $(this.$refs.advanced_params).collapse('show')
             } else {
                 this.test_parameters.clearErrors()
                 this.source.clearErrors()
                 this.integrations?.clearErrors()
-                this.scheduling?.clearErrors()
+                this.schedules?.clearErrors()
             }
         },
     },
@@ -569,11 +609,13 @@ const TestCreateModal = {
                     },
                     parallel_runners: this.parallel_runners,
                     cc_env_vars: {},
-                    customization: this.customization
+                    customization: this.customization,
+                    loops: this.loops,
+                    aggregation: this.aggregation
                 },
                 test_parameters: this.test_parameters.get(),
                 integrations: this.integrations?.get() || {},
-                scheduling: this.scheduling?.get() || [],
+                schedules: this.schedules?.get() || [],
             }
             let csv_files = {}
             $("#splitCSV .flex-row").slice(1,).each(function (_, item) {
@@ -648,6 +690,8 @@ const TestCreateModal = {
                 name: '',
                 test_type: '',
                 env_type: '',
+                loops: 1,
+                aggregation: 'max',
 
                 location: 'default',
                 parallel_runners: 1,
@@ -668,7 +712,7 @@ const TestCreateModal = {
             }
         },
         set(data) {
-            const {test_parameters, integrations, scheduling, source, env_vars: all_env_vars, ...rest} = data
+            const {test_parameters, integrations, schedules, source, env_vars: all_env_vars, ...rest} = data
 
             const {cpu_quota, memory_quota, ...env_vars} = all_env_vars
 
@@ -696,7 +740,7 @@ const TestCreateModal = {
             this.source.set(source)
 
             integrations && this.integrations.set(integrations)
-            scheduling && this.scheduling.set(scheduling)
+            schedules && this.schedules.set(schedules)
 
             rest?.customization && $(this.$refs.advanced_params).collapse('show')
 
@@ -707,7 +751,7 @@ const TestCreateModal = {
             this.test_parameters.clear()
             this.source.clear()
             this.integrations?.clear()
-            this.scheduling?.clear()
+            this.schedules?.clear()
             $('#backend_parallel').text(this.parallel_runners)
             $('#backend_cpu').text(this.cpu_quota)
             $('#backend_memory').text(this.memory_quota)
@@ -725,10 +769,7 @@ const TestCreateModal = {
         },
     }
 }
-
 register_component('TestCreateModal', TestCreateModal)
-
-
 
 
 function addCSVSplit(id, key = "", is_header = "") {
@@ -748,16 +789,6 @@ function addCSVSplit(id, key = "", is_header = "") {
 </div>`)
 }
 
-// function toggleRows(id) {
-//     $(`#${id}`).append(`<div class="d-flex flex-row">
-//     <div class="flex-fill">
-//         <input type="text" class="form-control form-control-alternative" placeholder="Failed thresholds rate" value="20">
-//         <label class="form-check-label">Failed thresholds rate. If the failed thresholds rate in the test is higher than this number, the test will be considered as failed</label>
-//     </div>
-//
-// </div>`)
-// }
-
 
 const TestRunModal = {
     delimiters: ['[[', ']]'],
@@ -769,7 +800,7 @@ const TestRunModal = {
                     <div class="modal-header">
                         <div class="row w-100">
                             <div class="col">
-                                <h2>Run Backend Test</h2>
+                                <h2>Run UI Test</h2>
                             </div>
                             <div class="col-xs">
                                 <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" aria-label="Close">

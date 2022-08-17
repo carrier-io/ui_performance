@@ -1,9 +1,15 @@
+from traceback import format_exc
+
 from flask_restful import Resource
 from pylon.core.tools import log
 from flask import current_app, request, make_response
+
+from ...models.pd.test_parameters import UITestParamsRun
 from ...models.ui_report import UIReport
 from tools import MinioClient, api_tools
 from datetime import datetime
+
+from ...models.ui_tests import UIPerformanceTest
 
 
 class API(Resource):
@@ -38,6 +44,22 @@ class API(Resource):
 
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
 
+        test_config = None
+        # if 'test_params' in args:
+        #     try:
+        #         test = UIPerformanceTest.query.filter(
+        #             UIPerformanceTest.test_uid == args.get('test_id')  # todo: no test_uid
+        #         ).first()
+        #         # test._session.expunge(test) # maybe we'll need to detach object from orm
+        #         test.__dict__['test_parameters'] = test.filtered_test_parameters_unsecret(
+        #             UITestParamsRun.from_control_tower_cmd(
+        #                 args['test_params']
+        #             ).dict()['test_parameters']
+        #         )
+        #     except Exception as e:
+        #         log.error('Error parsing params from control tower %s', format_exc())
+        #         return f'Error parsing params from control tower: {e}', 400
+
         report = UIReport(
             uid=args['report_id'],
             name=args["test_name"],
@@ -50,6 +72,8 @@ class API(Resource):
             loops=args["loops"],
             aggregation=args["aggregation"]
         )
+        if test_config:
+            report.test_config = test_config
         report.insert()
 
         return report.to_json()

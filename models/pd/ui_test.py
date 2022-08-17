@@ -12,9 +12,6 @@ from ...constants import RUNNER_MAPPING
 class TestOverrideable(BaseModel):
     parallel_runners: Optional[int]
     location: str = 'default'
-    browser: str = 'Chrome_undefined'
-    loops: int
-    aggregation: str
     env_vars: dict = {}
     customization: dict = {}
     cc_env_vars: dict = {}
@@ -42,11 +39,6 @@ class TestOverrideable(BaseModel):
         value['ENV'] = value.get('ENV', 'Default')
         return value
 
-    @validator('aggregation')
-    def validate_aggregation(cls, value: str):
-        valid_aggregations = ['max', 'min', 'avg']
-        assert value in valid_aggregations, f'Only following aggregations are supported: {valid_aggregations}'
-        return value
 
 
 class TestCommon(TestOverrideable):
@@ -62,6 +54,9 @@ class TestCommon(TestOverrideable):
     entrypoint: str
     runner: str
     source: dict
+    browser: str = 'Chrome_undefined'
+    loops: int
+    aggregation: str
 
     @root_validator
     def set_uuid(cls, values: dict):
@@ -96,3 +91,9 @@ class TestCommon(TestOverrideable):
             'name': value['name'],
             **validated.dict()
         }
+
+    @validator('aggregation')
+    def validate_aggregation(cls, value: str):
+        valid_aggregations = ['max', 'min', 'avg']
+        assert value in valid_aggregations, f'Only following aggregations are supported: {valid_aggregations}'
+        return value
