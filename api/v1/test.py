@@ -23,14 +23,15 @@ class API(Resource):
         test = UIPerformanceTest.query.filter(
             UIPerformanceTest.get_api_filter(project.id, test_id)
         ).first()
-        if request.args.get("raw"):
-            test = test.api_json(with_schedules=True)
-            return test
-        if request.args.get("type") == "docker":
-            message = test.configure_execution_json('docker', execution=request.args.get("exec", False))
-        else:
-            message = [{"test_id": test.test_uid}]
-        return {"config": message}  # this is cc format
+        output = request.args.get('output')
+
+        if output == 'docker':
+            return {'cmd': test.docker_command}, 200
+
+        if output == 'test_uid':
+            return {"config": [{"test_id": test.test_uid}]}, 200  # format is ok?
+
+        return test.api_json(with_schedules=True)
 
     def put(self, project_id: int, test_id: Union[int, str]):
         """ Update test data and run on demand """
