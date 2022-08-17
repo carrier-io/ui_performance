@@ -76,6 +76,7 @@ class API(Resource):
             report.test_config = test_config
         report.insert()
 
+        self.module.context.rpc_manager.call.increment_statistics(project_id, 'ui_performance_test_runs')
         return report.to_json()
 
     def put(self, project_id: int):
