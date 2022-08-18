@@ -25,21 +25,18 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
     from ..models.ui_report import UIReport
     report = UIReport(
         uid=uuid4(),
-        # name=params[0]["default"],
-        name=test_parameter_value_by_name(test.test_parameters, 'test_name'),
+        name=test_parameter_value_by_name(test.all_test_parameters.dict()['test_parameters'], 'test_name'),
         project_id=test.project_id,
         start_time=datetime.utcnow().isoformat(" ").split(".")[0],
         is_active=True,
-        browser=test.browser.split("_")[0],
-        browser_version=test.browser.split("_")[1],  # todo: same value as browser?
-        # environment=params[1]["default"],
+        browser=test.browser_name,
+        browser_version=test.browser_version,  # todo: same value as browser?
         environment=test_parameter_value_by_name(test.test_parameters, 'env_type'),
-        # test_type=params[2]["default"],
         test_type=test_parameter_value_by_name(test.test_parameters, 'test_type'),
         loops=test.loops,
         aggregation=test.aggregation,
-        # todo: no test_uid?
-        test_config=test.api_json()
+        test_config=test.api_json(),
+        test_uid=test.test_uid
     )
     report.insert()
     event["cc_env_vars"]["REPORT_ID"] = str(report.uid)

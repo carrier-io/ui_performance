@@ -40,7 +40,6 @@ class TestOverrideable(BaseModel):
         return value
 
 
-
 class TestCommon(TestOverrideable):
     """
     Model of test itself without test_params or other plugin module's data

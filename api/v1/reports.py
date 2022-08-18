@@ -45,20 +45,20 @@ class API(Resource):
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
 
         test_config = None
-        # if 'test_params' in args:
-        #     try:
-        #         test = UIPerformanceTest.query.filter(
-        #             UIPerformanceTest.test_uid == args.get('test_id')  # todo: no test_uid
-        #         ).first()
-        #         # test._session.expunge(test) # maybe we'll need to detach object from orm
-        #         test.__dict__['test_parameters'] = test.filtered_test_parameters_unsecret(
-        #             UITestParamsRun.from_control_tower_cmd(
-        #                 args['test_params']
-        #             ).dict()['test_parameters']
-        #         )
-        #     except Exception as e:
-        #         log.error('Error parsing params from control tower %s', format_exc())
-        #         return f'Error parsing params from control tower: {e}', 400
+        if 'test_params' in args:
+            try:
+                test = UIPerformanceTest.query.filter(
+                    UIPerformanceTest.test_uid == args.get('test_id')  # todo: no test_uid
+                ).first()
+                # test._session.expunge(test) # maybe we'll need to detach object from orm
+                test.__dict__['test_parameters'] = test.filtered_test_parameters_unsecret(
+                    UITestParamsRun.from_control_tower_cmd(
+                        args['test_params']
+                    ).dict()['test_parameters']
+                )
+            except Exception as e:
+                log.error('Error parsing params from control tower %s', format_exc())
+                return f'Error parsing params from control tower: {e}', 400
 
         report = UIReport(
             uid=args['report_id'],

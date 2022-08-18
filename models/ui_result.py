@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, JSON, Float
-from tools import db_tools, db, rpc_tools, constants as c, secrets_tools
+from tools import db_tools, db, rpc_tools
 
 
 class UIResult(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):

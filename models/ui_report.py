@@ -33,6 +33,7 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
     loops = Column(Integer, unique=False, nullable=True)
     aggregation = Column(String(128), unique=False)
     test_config = Column(JSON, nullable=False, unique=False)
+    test_uid = Column(String(128), unique=False, nullable=False)
 
     # def insert(self):
     #     if not self.test_config:

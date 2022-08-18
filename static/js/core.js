@@ -165,35 +165,21 @@ const TestCreateModal = {
             <div class="modal-header">
                 <div class="row w-100">
                     <div class="col">
-                        <h2>[[ mode === 'create' ? 'Create Backend Tests' : 'Update Backend Test' ]]</h2>
+                        <h2>[[ mode === 'create' ? 'Create' : 'Update' ]] UI Test</h2>
                     </div>
                     <div class="col-xs">
                         <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" aria-label="Close">
                             Cancel
                         </button>
                         <button type="button" class="btn btn-secondary mr-2" 
-                            @click="() => handleCreate(false)"
-                            v-if="mode === 'create'"
+                            @click="() => mode === 'create' ? handleCreate(false) : handleUpdate(false)"
                         >
-                            Save
+                            [[ mode === 'create' ? 'Save' : 'Update' ]]
                         </button>
                         <button type="button" class="btn btn-basic" 
-                            @click="() => handleCreate(true)"
-                            v-if="mode === 'create'"
+                            @click="() => mode === 'create' ? handleCreate(true) : handleUpdate(true)"
                         >
-                            Save and start
-                        </button>
-                        <button type="button" class="btn btn-secondary mr-2" 
-                            @click="() => handleUpdate(false)"
-                            v-if="mode === 'update'"
-                        >
-                            Update
-                        </button>
-                        <button type="button" class="btn btn-basic" 
-                            @click="() => handleUpdate(true)"
-                            v-if="mode === 'update'"
-                        >
-                            Update and start
+                            [[ mode === 'create' ? 'Save and start' : 'Update and start' ]]
                         </button>
                     </div>
                 </div>
@@ -345,7 +331,7 @@ const TestCreateModal = {
                     v-model:cpu="cpu_quota"
                     v-model:memory="memory_quota"
                     
-                    modal_id="backend"
+                    modal_id="ui"
                     
                     v-bind="locations"
                     ref="locations"
@@ -522,7 +508,7 @@ const TestCreateModal = {
                 }, {})
 
             } catch (e) {
-                alertCreateTest.add(e, 'danger-overlay')
+                alertCreateTest.add(e, 'danger-overlay', true, 5000)
             }
         },
         initial_state() {
@@ -595,9 +581,10 @@ const TestCreateModal = {
             this.source.clear()
             this.integrations?.clear()
             this.schedules?.clear()
-            $('#backend_parallel').text(this.parallel_runners)
-            $('#backend_cpu').text(this.cpu_quota)
-            $('#backend_memory').text(this.memory_quota)
+            // $('#ui_parallel').text(this.parallel_runners)
+            // $('#ui_cpu').text(this.cpu_quota)
+            // $('#ui_memory').text(this.memory_quota)
+
             // this.$refs.customization_component.clear()
         },
         clearErrors() {
@@ -792,7 +779,7 @@ const TestRunModal = {
                 }, {})
 
             } catch (e) {
-                alertCreateTest.add(e, 'danger-overlay')
+                alertCreateTest.add(e, 'danger-overlay', true, 5000)
             }
         },
     },

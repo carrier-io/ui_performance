@@ -13,8 +13,7 @@
 #     limitations under the License.
 
 from queue import Empty
-from typing import List, Union
-from json import dumps
+from typing import List, Union, Optional
 from pylon.core.tools import log
 from sqlalchemy import Column, Integer, String, JSON, ARRAY, and_
 
@@ -113,7 +112,18 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
             test_id=self.test_uid
         )
 
-    def add_schedule(self, schedule_data: dict, commit_immediately: bool = True):
+    @property
+    def browser_name(self) -> str:
+        return self.browser.split('_')[0]
+
+    @property
+    def browser_version(self) -> Optional[Union[int, str]]:
+        try:
+            return self.browser.split('_')[1]
+        except IndexError:
+            return None
+
+    def add_schedule(self, schedule_data: dict, commit_immediately: bool = True) -> None:
         schedule_data['test_id'] = self.id
         schedule_data['project_id'] = self.project_id
         try:
@@ -126,7 +136,7 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         except Empty:
             log.warning('No scheduling rpc found')
 
-    def handle_change_schedules(self, schedules_data: List[dict]):
+    def handle_change_schedules(self, schedules_data: List[dict]) -> None:
         new_schedules_ids = set(i['id'] for i in schedules_data if i['id'])
         ids_to_delete = set(self.schedules).difference(new_schedules_ids)
         self.schedules = []
