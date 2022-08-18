@@ -52,8 +52,8 @@
                         Entrypoint
                     </th>
                     <th scope="col" data-align="center" data-sortable="true"
-                        data-formatter=test_formatters.job_type
-                        data-field="job_type"
+                        data-formatter=test_formatters.runner
+                        data-field="runner"
                     >
                         Tool
                     </th>
@@ -105,12 +105,10 @@
             </th>
             <th scope="col" data-sortable="true" data-field="start_time">Date</th>
             <th scope="col" data-sortable="true" data-field="duration">Duration</th>
-            <th scope="col" data-sortable="true" data-field="type">Test Type</th>
+            <th scope="col" data-sortable="true" data-field="test_type">Test Type</th>
             <th scope="col" data-sortable="true" data-field="environment">Env</th>
-            <th scope="col" data-sortable="true" data-field="page_time">Avg Page Time</th>
-            <th scope="col" data-sortable="true" data-field="failure_rate">Fail Rate</th>
-            <th scope="col" data-sortable="true" data-field="failure_rate">Browser</th>
-            <th scope="col" data-sortable="true" data-field="tags">Tags</th>
+            <th scope="col" data-sortable="true" data-field="browser">Browser</th>
+            <th scope="col" data-sortable="true" data-field="browser_version">Version</th>
             <th scope="col" data-sortable="true" data-field="test_status"
                 data-formatter="report_formatters.reportsStatusFormatter"
             >

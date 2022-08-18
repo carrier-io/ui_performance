@@ -41,7 +41,8 @@ class RPC:
                     end_time=report.stop_time, start_time=report.start_time, duration=report.duration,
                     failures=thresholds_missed, thresholds_missed=thresholds_missed, aggregation=report.aggregation,
                     avg_page_load=round(avg_page_load / 1000, 2), tags=[], loops=report.loops,
-                    avg_step_duration=0.5, build_id=str(uuid4()), release_id=1, test_status=report.test_status)
+                    avg_step_duration=0.5, build_id=str(uuid4()), release_id=1, test_status=report.test_status,
+                    test_config=report.test_config, )
         return data
 
     @web.rpc('ui_performance_job_type_by_uid')

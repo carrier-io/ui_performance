@@ -1,11 +1,14 @@
 const api_base_url = '/api/v1/ui_performance'
 var test_formatters = {
-    job_type(value, row, index) {
+    runner(value, row, index) {
         switch (value) {
-            case 'browsertime':
+            case 'Sitespeed (browsertime)':
                 return '<img src="/design-system/static/assets/ico/sitespeed.png" width="20">'
-            case 'lighthouse':
+            case 'Lighthouse':
+            case 'Lighthouse-Nodejs':
                 return '<img src="/design-system/static/assets/ico/lighthouse.png" width="20">'
+            case 'Observer':
+                return '<img src="/design-system/static/assets/ico/selenium.png" width="20">'
             default:
                 return value
         }
@@ -148,121 +151,12 @@ var custom_params_table_formatters = {
     }
 }
 
-const CustomizationItem = {
-    delimiters: ['[[', ']]'],
-    props: ['file', 'path', 'i_index'],
-    emits: ['update:file', 'update:path', 'delete'],
-    template: `
-    <div class="d-flex flex-row">
-        <div class="flex-fill">
-            <input type="text" class="form-control form-control-alternative" placeholder="bucket/file"
-                @change="$emit('update:file', $event.target.value)"
-                :value="file"
-            >
-        </div>
-        <div class="flex-fill pl-3">
-            <input type="text" class="form-control form-control-alternative" placeholder="path/to/file"
-                @change="$emit('update:path', $event.target.value)"
-                :value="path"
-            >
-        </div>
-        <div class="m-auto pl-3">
-            <button type="button" class="btn btn-32 btn-action" 
-                @click="$emit('delete', i_index)"
-            >
-                <i class="fas fa-minus"></i>
-            </button>
-        </div>
-    </div>
-    `,
-    methods: {
-        initial_state() {
-            return {
-                file: '',
-                path: '',
-            }
-        }
-    }
-}
-const Customization = {
-    delimiters: ['[[', ']]'],
-    props: ['customization', 'errors', 'modelValue'],
-    emits: ['update:modelValue'],
-    components: {
-        CustomizationItem: CustomizationItem
-    },
-    data() {
-        return {
-            cc_items: []
-        }
-    },
-    template: `
-    <div class="card card-x card-row-1">
-        <div class="card-header">
-            <div class="d-flex flex-row">
-                <div class="flex-fill">
-                    <h9 class="flex-grow-1">Custom plugins and extensions</h9>
-                    <p>
-                        <h13>Bucket and file for your customizations</h13>
-                    </p>
-                </div>
-                <div>
-                    <button type="button" class="btn btn-32 btn-action mt-1"
-                        @click="handle_add_item"
-                    >
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="d-flex flex-row invalid-feedback">[[ errors?.length > 0 ? errors[0]?.msg : '']]</div>
-            <CustomizationItem
-                v-for="(item, index) in cc_items"
-                :key="index"
-                :i_index="index"
-                v-model:file="item.file"
-                v-model:path="item.path"
-                @delete="handle_delete_item"
-            ></CustomizationItem>
-        </div>
-    </div>
-    `,
-    computed: {
-        converted() {
-            return this.cc_items.reduce((acc, i) => {
-                acc[i.file] = i.path
-                return acc
-            }, {})
-        }
-    },
-    methods: {
-        handle_add_item() {
-            this.cc_items.push(CustomizationItem.methods.initial_state())
-            // this.$emit('update:modelValue', this.converted)
-        },
-        handle_delete_item(item_id) {
-            this.cc_items.splice(item_id, 1)
-            // this.$emit('update:modelValue', this.converted)
-        },
-        clear() {
-            this.cc_items = []
-        }
-    },
-    watch: {
-        cc_items: {
-            handler(newValue, oldValue) {
-                this.$emit('update:modelValue', this.converted)
-            },
-            deep: true
-        }
-    },
-
-}
 
 const TestCreateModal = {
     delimiters: ['[[', ']]'],
-    components: {
-        Customization: Customization,
-    },
+    // components: {
+        // Customization: Customization,
+    // },
     props: ['modal_id', 'runners', 'test_params_id', 'source_card_id', 'locations'],
     template: `
 <div class="modal modal-base fixed-left fade shadow-sm" tabindex="-1" role="dialog" :id="modal_id">
@@ -461,57 +355,6 @@ const TestCreateModal = {
                 <slot name='integrations'></slot>
                 <slot name='schedules'></slot>
                 
-
-                <div class="section mt-3" @click="handle_advanced_params_icon">
-                    <div class="row" data-toggle="collapse" data-target="#advancedBackend" role="button" aria-expanded="false" aria-controls="advancedBackend">
-                        <div class="col">
-                            <h7>ADVANCED PARAMETERS</h7>
-                            <p>
-                                <h13>Configure parameters for test runner, test data and network setting</h13>
-                            </p>
-                        </div>
-                        <div class="col">
-                            <div class="col-xs text-right">
-                                <button type="button" class="btn btn-nooutline-secondary mr-2"
-                                        data-toggle="collapse" data-target="#advancedBackend">
-                                        <i :class="advanced_params_icon"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="collapse row pt-4" id="advancedBackend"
-                        ref="advanced_params"
-                    >
-                        <div class="col row">
-                            <div class="col-6">
-                                <Customization
-                                    v-model="customization"
-                                    ref="customization_component"
-                                    :errors="errors.customization"
-                                ></Customization>
-                            </div>
-                            <div class="col-6">
-                                <div class="card card-x card-row-1" id="splitCSV">
-                                    <div class="card-header">
-                                        <div class="d-flex flex-row">
-                                            <div class="flex-fill">
-                                                <h9 class="flex-grow-1">Split CSV</h9>
-                                                <p>
-                                                    <h13>Distribute CSV data across load generators</h13>
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <button type="button" class="btn btn-32 btn-action mt-1"
-                                                        onclick="addCSVSplit('splitCSV')"><i class="fas fa-plus"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -578,7 +421,7 @@ const TestCreateModal = {
                     this.schedules?.setError(newValue.schedules) :
                     this.schedules?.clearErrors()
 
-                newValue.customization && $(this.$refs.advanced_params).collapse('show')
+                // newValue.customization && $(this.$refs.advanced_params).collapse('show')
             } else {
                 this.test_parameters.clearErrors()
                 this.source.clearErrors()
@@ -609,7 +452,7 @@ const TestCreateModal = {
                     },
                     parallel_runners: this.parallel_runners,
                     cc_env_vars: {},
-                    customization: this.customization,
+                    // customization: this.customization,
                     loops: this.loops,
                     aggregation: this.aggregation
                 },
@@ -617,23 +460,23 @@ const TestCreateModal = {
                 integrations: this.integrations?.get() || {},
                 schedules: this.schedules?.get() || [],
             }
-            let csv_files = {}
-            $("#splitCSV .flex-row").slice(1,).each(function (_, item) {
-                const file = $(item).find('input[type=text]')
-                const header = $(item).find('input[type=checkbox]')
-                if (file[0].value) {
-                    csv_files[file[0].value] = header[0].checked
-                }
-            })
-            if (Object.keys(csv_files).length > 0) {
-                data.common_params.cc_env_vars.csv_files = csv_files
-            }
+            // let csv_files = {}
+            // $("#splitCSV .flex-row").slice(1,).each(function (_, item) {
+            //     const file = $(item).find('input[type=text]')
+            //     const header = $(item).find('input[type=checkbox]')
+            //     if (file[0].value) {
+            //         csv_files[file[0].value] = header[0].checked
+            //     }
+            // })
+            // if (Object.keys(csv_files).length > 0) {
+            //     data.common_params.cc_env_vars.csv_files = csv_files
+            // }
             return data
         },
-        handle_advanced_params_icon(e) {
-            this.advanced_params_icon = this.$refs.advanced_params.classList.contains('show') ?
-                'fas fa-chevron-down' : 'fas fa-chevron-up'
-        },
+        // handle_advanced_params_icon(e) {
+        //     this.advanced_params_icon = this.$refs.advanced_params.classList.contains('show') ?
+        //         'fas fa-chevron-down' : 'fas fa-chevron-up'
+        // },
         async handleCreate(run_test = false) {
             this.clearErrors()
             const resp = await fetch(`${api_base_url}/tests/${getSelectedProjectId()}`, {
@@ -701,12 +544,12 @@ const TestCreateModal = {
                 entrypoint: '',
                 runner: this.default_runner,
                 env_vars: {},
-                customization: {},
+                // customization: {},
                 cc_env_vars: {},
 
                 errors: {},
 
-                advanced_params_icon: 'fas fa-chevron-down',
+                // advanced_params_icon: 'fas fa-chevron-down',
                 mode: 'create',
                 active_source_tab: undefined,
             }
@@ -742,7 +585,7 @@ const TestCreateModal = {
             integrations && this.integrations.set(integrations)
             schedules && this.schedules.set(schedules)
 
-            rest?.customization && $(this.$refs.advanced_params).collapse('show')
+            // rest?.customization && $(this.$refs.advanced_params).collapse('show')
 
             this.show()
         },
@@ -755,7 +598,7 @@ const TestCreateModal = {
             $('#backend_parallel').text(this.parallel_runners)
             $('#backend_cpu').text(this.cpu_quota)
             $('#backend_memory').text(this.memory_quota)
-            this.$refs.customization_component.clear()
+            // this.$refs.customization_component.clear()
         },
         clearErrors() {
             this.errors = {}
@@ -772,22 +615,22 @@ const TestCreateModal = {
 register_component('TestCreateModal', TestCreateModal)
 
 
-function addCSVSplit(id, key = "", is_header = "") {
-    $(`#${id}`).append(`<div class="d-flex flex-row">
-    <div class="flex-fill">
-        <input type="text" class="form-control form-control-alternative" placeholder="File Path" value="${key}">
-    </div>
-    <div class="flex-fill m-auto pl-3">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="">
-          <label class="form-check-label">Ignore first line</label>
-        </div>
-    </div>
-    <div class="m-auto">
-        <button type="button" class="btn btn-32 btn-action" onclick="removeParam(event)"><i class="fas fa-minus"></i></button>
-    </div>
-</div>`)
-}
+// function addCSVSplit(id, key = "", is_header = "") {
+//     $(`#${id}`).append(`<div class="d-flex flex-row">
+//     <div class="flex-fill">
+//         <input type="text" class="form-control form-control-alternative" placeholder="File Path" value="${key}">
+//     </div>
+//     <div class="flex-fill m-auto pl-3">
+//         <div class="form-check">
+//           <input class="form-check-input" type="checkbox" value="">
+//           <label class="form-check-label">Ignore first line</label>
+//         </div>
+//     </div>
+//     <div class="m-auto">
+//         <button type="button" class="btn btn-32 btn-action" onclick="removeParam(event)"><i class="fas fa-minus"></i></button>
+//     </div>
+// </div>`)
+// }
 
 
 const TestRunModal = {
@@ -862,7 +705,7 @@ const TestRunModal = {
                 memory_quota: 4,
 
                 env_vars: {},
-                customization: {},
+                // customization: {},
                 cc_env_vars: {},
 
                 errors: {},

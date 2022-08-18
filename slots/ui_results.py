@@ -1,6 +1,8 @@
 from pylon.core.tools import web, log  # pylint: disable=E0611,E0401
 from tools import auth, theme  # pylint: disable=E0401
 
+from ..models.ui_report import UIReport
+
 
 class Slot:  # pylint: disable=E1101,R0903
     @web.slot('ui_results_content')
@@ -23,9 +25,16 @@ class Slot:  # pylint: disable=E1101,R0903
     def scripts(self, context, slot, payload):
         from pylon.core.tools import log
         log.info('slot: [%s], payload: %s', slot, payload)
+        result_id = payload.request.args.get('result_id')
+        source_data = {}
+        if result_id:
+            test_data = UIReport.query.get_or_404(result_id).to_json()
+            source_data = test_data['test_config'].get('source')
         with context.app.app_context():
             return self.descriptor.render_template(
-                'results/scripts.html'
+                'results/scripts.html',
+                source_data=source_data,
+                test_data=test_data,
             )
 
     @web.slot('ui_results_styles')

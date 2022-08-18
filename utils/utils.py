@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from queue import Empty
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 from uuid import uuid4
 from pydantic import ValidationError
 
@@ -10,8 +10,10 @@ from pylon.core.tools import log
 from tools import task_tools, rpc_tools
 
 
-def test_parameter_value_by_name(test_parameters: List[dict], param_name: str) -> dict:
-    return set(filter(lambda i: i['name'] == param_name, test_parameters)).pop()
+def test_parameter_value_by_name(test_parameters: List[dict], param_name: str) -> Optional[str]:
+    for i in test_parameters:
+        if i['name'] == param_name:
+            return i['default']
 
 
 def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bool = False) -> dict:
@@ -29,7 +31,7 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
         start_time=datetime.utcnow().isoformat(" ").split(".")[0],
         is_active=True,
         browser=test.browser.split("_")[0],
-        browser_version=test.browser.split("_")[0],  # todo: same value as browser?
+        browser_version=test.browser.split("_")[1],  # todo: same value as browser?
         # environment=params[1]["default"],
         environment=test_parameter_value_by_name(test.test_parameters, 'env_type'),
         # test_type=params[2]["default"],
@@ -43,7 +45,7 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
     event["cc_env_vars"]["REPORT_ID"] = str(report.uid)
 
     resp = task_tools.run_task(test.project_id, [event])
-    resp['redirect'] = f'/task/{resp["task_id"]}/results'  # todo: where this should lead to?
+    # resp['redirect'] = f'/task/{resp["task_id"]}/results'  # todo: where this should lead to?
 
     test.rpc.call.increment_statistics(test.project_id, 'ui_performance_test_runs')
     resp['result_id'] = report.id  # for test rerun

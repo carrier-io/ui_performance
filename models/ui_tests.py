@@ -152,7 +152,7 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
 
     # def configure_execution_json(self, output='cc', browser=None, test_type=None, params=None, env_vars=None, reporting=None,
     #                              customization=None, cc_env_vars=None, parallel=None, execution=False):
-    def configure_execution_json(self, execution=False): # todo: browser override here?
+    def configure_execution_json(self, execution=False):
 
         # reports = []
         # for report in self.reporting:
@@ -167,11 +167,11 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         execution_json = {
             "test_id": self.test_uid,
             "container": self.container,
-            "execution_params": ExecutionParams.from_orm(self).dict(exclude_none=True), # todo: no json.dumps?
+            "execution_params": ExecutionParams.from_orm(self).dict(exclude_none=True),
             "cc_env_vars": CcEnvVars.from_orm(self).dict(exclude_none=True),
             "job_name": self.name,
             "job_type": self.job_type,
-            "concurrency": self.parallel_runners, # todo: this was const == 1
+            "concurrency": self.parallel_runners,
             "channel": self.location,
             **self.rpc.call.parse_source(self.source).execution_json,
             "integrations": self.integrations
