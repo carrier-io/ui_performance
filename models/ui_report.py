@@ -32,3 +32,13 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
     passed = Column(Boolean, unique=False, default=True)
     loops = Column(Integer, unique=False, nullable=True)
     aggregation = Column(String(128), unique=False)
+    test_config = Column(JSON, nullable=False, unique=False)
+    test_uid = Column(String(128), unique=False, nullable=False)
+
+    # def insert(self):
+    #     if not self.test_config:
+    #         from .ui_tests import UIPerformanceTest
+    #         self.test_config = UIPerformanceTest.query.filter(
+    #             UIPerformanceTest.test_uid == self.test_uid  # todo: no self.test_uid
+    #         ).first().api_json()
+    #     super().insert()

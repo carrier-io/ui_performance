@@ -1,9 +1,9 @@
-<script src="{{ url_for('design-system.static', filename='assets/vendor/nouislider/nouislider.js') }}"
-        type="text/javascript"></script>
-<script src="{{ url_for('design-system.static', filename='assets/js/table-formatters.js') }}"
-        type="text/javascript"></script>
-<script src="{{ url_for('ui_performance.static', filename='js/test_planner.js') }}"
-        type="text/javascript"></script>
-{{ template_slot('params_table_scripts') | safe }}
+<script src="{{ url_for('ui_performance.static', filename='js/docker_command.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/core.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/thresholds.js') }}"></script>
 
-{{ template_slot("locations_scripts") | safe }}
+{{ template_slot('params_table_scripts') | safe }}
+{{ template_slot('sources_scripts') | safe }}
+{{ template_slot('locations_scripts') | safe }}
+{{ template_slot('integrations_ui_performance_scripts') | safe }}
+{{ template_slot('ui_performance_scheduling_test_create_scripts') | safe }}

@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from pylon.core.tools import log
-from flask import current_app, request, make_response
+from flask import request
 from ...models.ui_result import UIResult
 from ...models.ui_report import UIReport
 

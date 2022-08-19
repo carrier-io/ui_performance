@@ -1,0 +1,23 @@
+{% set modal_id = 'run_modal' %}
+<Test-Run-Modal
+    @register="register"
+    instance_name="{{ modal_id }}"
+    test_params_id="{{ modal_id }}_test_params"
+    instance_name_prefix="{{ modal_id }}_"
+>
+    <template #test_parameters>
+        {{ template_slot("params_table_content", payload={
+            "caption": "Test Parameters",
+            "modal_id": modal_id,
+            'custom_formatters': {
+                'name': 'custom_params_table_formatters.input',
+                'action': 'custom_params_table_formatters.action'
+            }
+        }) | safe }}
+    </template>
+    <template #integrations>
+        {{ template_slot("integrations_ui_performance_content", payload={
+            'instance_name_prefix': '%s_' | format(modal_id)
+        }) | safe }}
+    </template>
+</Test-Run-Modal>

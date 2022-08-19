@@ -21,7 +21,7 @@ from pylon.core.tools import log  # pylint: disable=E0611,E0401
 from pylon.core.tools import module  # pylint: disable=E0611,E0401
 
 from .init_db import init_db
-from tools import theme
+from tools import theme, shared
 
 
 class Module(module.ModuleModel):
@@ -30,12 +30,10 @@ class Module(module.ModuleModel):
     def __init__(self, context, descriptor):
         self.context = context
         self.descriptor = descriptor
-        #
-        # self.settings = self.descriptor.config
 
     def init(self):
         """ Init module """
-        log.info(f'Initializing module {self.descriptor.name}')
+        log.info('Initializing module')
         init_db()
 
         self.descriptor.init_api()
@@ -43,6 +41,16 @@ class Module(module.ModuleModel):
         self.descriptor.init_rpcs()
 
         self.descriptor.init_blueprint()
+
+        try:
+            theme.register_section(
+                "performance",
+                "Performance",
+                kind="holder",
+                location="left",
+            )
+        except:
+            ...
 
         theme.register_subsection(
             "performance", "ui",
@@ -63,6 +71,8 @@ class Module(module.ModuleModel):
 
         self.descriptor.init_slots()
 
+        shared.job_type_rpcs.add('ui_performance')
+
     def deinit(self):  # pylint: disable=R0201
         """ De-init module """
-        log.info(f'De-initializing module {self.descriptor.name}')
+        log.info('De-initializing module')
