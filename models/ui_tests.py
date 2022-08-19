@@ -47,8 +47,8 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
     # cc_env_vars = Column(JSON)
     # job_type = Column(String(20))
 
-    loops = Column(Integer)
-    aggregation = Column(String(20))
+    loops = Column(Integer, nullable=True)
+    aggregation = Column(String(20), nullable=True)
 
 
     parallel_runners = Column(Integer, nullable=False)

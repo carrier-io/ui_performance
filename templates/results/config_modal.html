@@ -85,7 +85,7 @@
                                     </option>
                                 </select>
                             </div>
-
+                            {% if 'lighthouse' not in (test_config['runner'] | lower) %}
                             <div class="row">
                                 <div class="form-group col-6">
                                     <h9>Number of loops</h9>
@@ -115,6 +115,7 @@
                                     </select>
                                 </div>
                             </div>
+                            {% endif %}
 
 
                         </div>

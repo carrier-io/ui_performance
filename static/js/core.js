@@ -262,7 +262,9 @@ const TestCreateModal = {
                                 <div class="invalid-feedback">[[ get_error_msg('runner') ]]</div>
                             </div>
                             
-                            <div class="row">
+                            <div class="row" 
+                                v-show="!lighthouse_selected"
+                            >
                                 <div class="form-group col-6">
                                     <p class="font-h5 font-semibold">Number of loops</p>
                                     <p>
@@ -301,7 +303,6 @@ const TestCreateModal = {
                             </div>
                         </div>
                                
-                            
                                 
                         <div class="col">
                             <slot name='sources'></slot>
@@ -388,6 +389,9 @@ const TestCreateModal = {
                 return undefined
             }
         },
+        lighthouse_selected() {
+            return this.runner?.toLowerCase().includes('lighthouse')
+        }
     },
     watch: {
         errors(newValue,) {
@@ -439,12 +443,14 @@ const TestCreateModal = {
                     parallel_runners: this.parallel_runners,
                     cc_env_vars: {},
                     // customization: this.customization,
-                    loops: this.loops,
-                    aggregation: this.aggregation
                 },
                 test_parameters: this.test_parameters.get(),
                 integrations: this.integrations?.get() || {},
                 schedules: this.schedules?.get() || [],
+            }
+            if (!this.lighthouse_selected) {
+                data.common_params.loops = this.loops
+                data.common_params.aggregation = this.aggregation
             }
             // let csv_files = {}
             // $("#splitCSV .flex-row").slice(1,).each(function (_, item) {

@@ -54,8 +54,8 @@ class TestCommon(TestOverrideable):
     runner: str
     source: dict
     browser: str = 'Chrome_undefined'
-    loops: int
-    aggregation: str
+    loops: Optional[int]
+    aggregation: Optional[str]
 
     @root_validator
     def set_uuid(cls, values: dict):
