@@ -97,6 +97,19 @@ class API(Resource):
 
         return report.to_json()
 
+    def delete(self, project_id: int):
+        project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
+        try:
+            delete_ids = list(map(int, request.args["id[]"].split(',')))
+        except TypeError:
+            return make_response('IDs must be integers', 400)
+        UIReport.query.filter(
+            UIReport.project_id == project.id,
+            UIReport.id.in_(delete_ids)
+        ).delete()
+        UIReport.commit()
+        return {"message": "deleted"}, 204
+
     def __diffdates(self, d1, d2):
         # Date format: %Y-%m-%d %H:%M:%S
         date_format = '%Y-%m-%d %H:%M:%S'
