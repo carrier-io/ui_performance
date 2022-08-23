@@ -2,8 +2,9 @@
     <div class="card-header">
         <div class="row">
             <div class="col-4">
-                <h3><a id="back-button" href="/-/performance/ui"><i
-                        class="fas fa-arrow-left"></i></a> {{
+                <h3><a id="back-button" href="/-/performance/ui">
+                    <i class="icon__16x16 icon-arrow-left-bold__16"></i>
+                </a> {{
                     test_data["name"] }} (back)</h3>
             </div>
             <div class="col-8">
@@ -83,26 +84,44 @@
         <div class="row" id="processing-table">
             <div class="col">
                 <div class="card card-sm-table">
-                    <div class="card-body">
+                    <div class="card-body d-flex justify-content-between">
                         <table>
-                            <tr>
-                                <td class="text-gray-500">Status</td>
-                                <td>{{ test_data['test_status']['status'] }}</td>
-                                <td class="text-gray-500">STARTED</td>
-                                <td id="start_time">{{ test_data["start_time"] }}</td>
-                                <td class="text-gray-500">Environment</td>
-                                <td>{{ test_data["env_type"] }}</td>
-                                <td class="text-gray-500">Browser</td>
-                                <td>{{ test_data["browser"] }}</td>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">Status</td>
+                                <td class="font-h5">{{ test_data['test_status']['status'] }}</td>
                             </tr>
-                            <tr>
-                                <td class="text-gray-500">DURATION</td>
-                                <td>{{ test_data["duration"] }}</td>
-                                <td class="text-gray-500">ENDED</td>
-                                <td id="end_time">{{ test_data["end_time"] }}</td>
-                                <td class="text-gray-500">Test type</td>
-                                <td>{{ test_data["test_type"] }}</td>
-                                <td class="text-gray-500">Tags</td>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">DURATION</td>
+                                <td class="font-h5">{{ test_data["duration"] }}s</td>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">STARTED</td>
+                                <td class="font-h5" id="start_time">{{ test_data["start_time"] }}</td>
+                            </tr>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">ENDED</td>
+                                <td class="font-h5"  id="end_time font-h5">{{ test_data["end_time"] }}</td>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">Environment</td>
+                                <td class="font-h5">{{ test_data["env_type"] }}</td>
+                            </tr>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">Test type</td>
+                                <td class="font-h5">{{ test_data["test_type"] }}</td>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">Browser config</td>
+                                <td class="font-h5">{{ test_data["browser"] }}</td>
+                            </tr>
+                            <tr class="font-semibold">
+                                <td class="text-gray-500 font-h6">Tags</td>
                                 <td>
                                     {% for tag in test_data["tags"] %}
                                     <span class="badge badge-primary">{{ tag }}</span>
@@ -110,6 +129,9 @@
                                 </td>
                             </tr>
                         </table>
+                        <div style="width: 100px">
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,47 +141,78 @@
 
 {% if test_data['test_status']['status'].lower() in ['finished', 'error', 'failed', 'success'] %}
 <div class="card card-12 pb-4 card-table">
-    <div class="card-header">
-
-        <h3 class="text-gray mb-0">Overview</h3>
-        <div class="row">
-            <div class="col-6">
-                <ul id="chart-control" class="nav nav-pills">
-                    <li class="nav-item mr-2 mr-md-0 mt-2 ml-2">
-                        <span>Aggregated by {{test_data['aggregation']}} values in seconds. Metric:</span>
-                    </li>
-                    <li class="nav-item mr-2 mr-md-0">
-                        <select class="selectpicker" data-style="btn" id="metric">
-                            <option value="total">Load time</option>
-                            <option value="speed_index">Speed Index</option>
-                            <option value="time_to_first_byte">Time To First Byte</option>
-                            <option value="time_to_first_paint">Time To First Paint</option>
-                            <option value="dom_content_loading">DOM Content Loading</option>
-                            <option value="tti">Time To Interactive</option>
-                            <option value="fcp">First Contentful Paint</option>
-                            <option value="lcp">Largest Contentful Paint</option>
-                            <option value="cls">Cumulative Layout Shift</option>
-                            <option value="tbt">Total Blocking Time</option>
-                            <option value="fvc">First Visual Change</option>
-                            <option value="lvc">Last Visual Change</option>
-                        </select>
-                    </li>
-                </ul>
+    <div class="card-header d-flex justify-content-between">
+        <div class="d-flex justify-content-between align-items-center">
+            <p class="font-h3 font-bold text-gray mr-4">Summary</p>
+            <span>Aggr.: {{test_data['aggregation']}} (in sec.)</span>
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="selectpicker-titled mr-3">
+                <span class="font-h6 font-semibold px-3 item__left">METRIC</span>
+                <select class="selectpicker" data-style="item__right" id="metric">
+                    <option value="total">Load time</option>
+                    <option value="speed_index">Speed Index</option>
+                    <option value="time_to_first_byte">Time To First Byte</option>
+                    <option value="time_to_first_paint">Time To First Paint</option>
+                    <option value="dom_content_loading">DOM Content Loading</option>
+                    <option value="tti">Time To Interactive</option>
+                    <option value="fcp">First Contentful Paint</option>
+                    <option value="lcp">Largest Contentful Paint</option>
+                    <option value="cls">Cumulative Layout Shift</option>
+                    <option value="tbt">Total Blocking Time</option>
+                    <option value="fvc">First Visual Change</option>
+                    <option value="lvc">Last Visual Change</option>
+                </select>
             </div>
-
+            <ul class="custom-tabs nav nav-pills" id="icons-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">GRAPH</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">BARCHART</a>
+                </li>
+            </ul>
         </div>
     </div>
     <div class="card-body">
-        <div id="cy"></div>
+        <div id="cy" class="card"></div>
     </div>
 </div>
 
-
 <div class="card card-12 pb-4 card-table">
-    <div class="card-header">
-        <div class="row">
-            <div class="col-4">
-                <h3 class="text-gray mb-0">Pages results Aggr.: {{ test_data["aggregation"] }} (in ms.)</h3>
+    <div class="card-header d-flex justify-content-between">
+        <div class="d-flex justify-content-between align-items-center">
+            <p class="font-h3 font-bold text-gray mr-4">Pages results</p>
+            <span>Aggr.: {{ test_data["aggregation"] }} (in sec.)</span>
+        </div>
+
+        <div class="d-flex justify-content-end align-items-center pb-4">
+            <div>
+                <ul class="custom-tabs nav nav-pills mr-3" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="active" id="pills-all-tab" data-toggle="pill" href="#pills-all" role="tab" aria-controls="all" aria-selected="true">ALL</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="" id="pills-pages-tab" data-toggle="pill" href="#pills-pages" role="tab" aria-controls="pages" aria-selected="false">PAGES</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="" id="pills-actions-tab" data-toggle="pill" href="#pills-actions" role="tab" aria-controls="false_positive" aria-selected="false">ACTIONS</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex">
+                <select class="selectpicker btn-secondary_item__left" data-style="btn_item__left">
+                    <option data-content="Mustard<i class='fa fa-edit'></i>"></option>
+                    <option data-content="Ketchup<i class='fa fa-trash'></i>"></option>
+                    <option data-content="Relish<i class='fa fa-cog'></i>"></option>
+                </select>
+                <div class="dropdown dropdown_action">
+                    <button class="btn dropdown-toggle btn-secondary_item__right"
+                            role="button"
+                            aria-expanded="false">
+                        <i class="fa fa-cog"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -177,7 +230,11 @@
                 <th scope="col" data-sortable="true" data-field="total">Load time</th>
                 <th scope="col" data-sortable="true" data-field="dom_processing">DOM</th>
                 <th scope="col" data-sortable="true" data-field="tti">TTI</th>
-                <th scope="col" data-sortable="true" data-field="fcp">FCP</th>
+                <th scope="col" data-sortable="true" data-field="fcp">
+                    <span data-toggle="tooltip" data-placement="top" title="First Contentful Paint">
+                        FCP
+                    </span>
+                </th>
                 <th scope="col" data-sortable="true" data-field="lcp">LCP</th>
                 <th scope="col" data-sortable="true" data-field="cls">CLS</th>
                 <th scope="col" data-sortable="true" data-field="tbt">TBT</th>
@@ -194,5 +251,5 @@
 {% endif %}
 
 {% with test_config = test_data['test_config'] %}
-    {% include 'ui_performance:results/config_modal.html' %}
+{% include 'ui_performance:results/config_modal.html' %}
 {% endwith %}
