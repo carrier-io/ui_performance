@@ -110,7 +110,7 @@ const ThresholdModal = {
 
                     <div class="row">
                         <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2"> Aggregation </h5>
+                            <h5 class="pt-2">Aggregation</h5>
                             <p>
                                 <h13>Math aggregation of the metrics to be applied for threshold calculation.</h13>
                             </p>
@@ -233,7 +233,7 @@ const ThresholdModal = {
             await this.handle_fetch_scope()
         },
         async handle_fetch_scope() {
-            const resp = await fetch(`${api_th_base_url}/requests/${getSelectedProjectId()}?` +
+            const resp = await fetch(`${api_th_base_url}/scopes/${getSelectedProjectId()}?` +
                 $.param({name: this.test, environment: this.environment})
             )
             if (resp.ok) {
