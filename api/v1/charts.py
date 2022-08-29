@@ -195,7 +195,7 @@ class API(Resource):
             return max(totals)
         elif aggregation == "min":
             return min(totals)
-        elif aggregation == "avg":
+        else:
             return sum(totals) / len(totals)
 
     def closest(self, lst, val):
