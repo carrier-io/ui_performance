@@ -267,10 +267,8 @@ const TestCreateModal = {
                             >
                                 <div class="form-group col-6">
                                     <p class="font-h5 font-semibold">Number of loops</p>
-                                    <p>
-                                        <h13>How many times to repeat scenario execution.</h13>
-                                    </p>
-                                    <div class="custom-input mb-3 mt-1"
+                                    <h13>How many times to repeat scenario execution.</h13>
+                                    <div class="custom-input mb-3 mt-2"
                                         :class="{ 'invalid-input': errors?.loops }"
                                     >
                                         <input type="number" class="form-control form-control-alternative"
@@ -284,9 +282,7 @@ const TestCreateModal = {
                                     
                                 <div class="form-group col-6">
                                     <p class="font-h5 font-semibold">Aggregation</p>
-                                    <p>
-                                        <h13>Aggregation rule</h13>
-                                    </p>
+                                    <h13>Aggregation rule</h13>
                                     <div class="custom-input w-100-imp select-validation"
                                         :class="{ 'is-invalid': errors?.aggregation, 'invalid-select': errors?.aggregation }"
                                     >
