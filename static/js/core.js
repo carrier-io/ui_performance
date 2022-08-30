@@ -434,7 +434,8 @@ const TestCreateModal = {
                     source: this.source.get(),
                     env_vars: {
                         cpu_quota: this.cpu_quota,
-                        memory_quota: this.memory_quota
+                        memory_quota: this.memory_quota,
+                        ENV: this.env_type["default"]
                     },
                     parallel_runners: this.parallel_runners,
                     cc_env_vars: {},
@@ -743,7 +744,8 @@ const TestRunModal = {
                     env_type: env_type,
                     env_vars: {
                         cpu_quota: this.cpu_quota,
-                        memory_quota: this.memory_quota
+                        memory_quota: this.memory_quota,
+                        ENV: env_type["default"]
                     },
                     parallel_runners: this.parallel_runners
                 },

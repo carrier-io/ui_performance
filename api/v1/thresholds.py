@@ -34,7 +34,7 @@ class API(Resource):
     def post(self, project_id: int):
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
         try:
-            pd_obj = ThresholdPD(project_id=project_id, **request.json)
+            pd_obj = ThresholdPD(project_id=project.id, **request.json)
         except ValidationError as e:
             return e.errors(), 400
         th = UIThresholds(**pd_obj.dict())

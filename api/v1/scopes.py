@@ -16,7 +16,7 @@ class API(Resource):
 
     def get(self, project_id: int):
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
-        scopes = UIResult.query.with_entities(UIResult.name).filter(
+        scopes = UIResult.query.with_entities(UIResult.identifier, UIResult.name).filter(
             UIResult.report_uid.in_(
                 UIReport.query.with_entities(UIReport.uid).filter(
                     UIReport.project_id == project.id,
@@ -24,5 +24,5 @@ class API(Resource):
                     UIReport.environment == request.args['environment']
                 )
             ),
-        ).distinct(UIResult.name).all()
-        return [i[0] for i in scopes], 200
+        ).distinct(UIResult.identifier).all()
+        return [{"identifier": i[0], "name": i[1]} for i in scopes], 200

@@ -35,15 +35,17 @@ class ThresholdPD(BaseModel):
         if value in ['all', 'every']:
             return value
 
-        assert UIReport.query.filter(
-            UIReport.project_id == values['project_id'],
-            UIReport.requests.contains(value)
-        ).first(), 'Such scope does not exist'
+        # TODO fix validation - object 'UIReport' has no attribute 'requests'
+        # assert UIReport.query.filter(
+        #     UIReport.project_id == values['project_id'],
+        #     UIReport.requests.contains(value)
+        # ).first(), 'Such scope does not exist'
         return value
 
     @validator('target')
     def validate_target(cls, value: str):
-        assert value in {'throughput', 'error_rate', 'response_time'}, f'Target {value} is not supported'
+        # TODO validate threshold's target (update list). Do we need this validation? As target list is static
+        #assert value in {'throughput', 'error_rate', 'response_time'}, f'Target {value} is not supported'
         return value
 
     @validator('aggregation')
