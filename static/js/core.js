@@ -307,10 +307,10 @@ const TestCreateModal = {
                                 <div class="form-group">
                                     <p class="font-h5 font-semibold">Entrypoint</p>
                                     <p>
-                                        <h13>File for jMeter and class for gatling</h13>
+                                        <h13>Script name</h13>
                                     </p>
                                     <input type="text" class="form-control form-control-alternative"
-                                           placeholder="Entrypoint (e.g. some.jmx or some.Test)"
+                                           placeholder="sitespeed.js"
                                            v-model='entrypoint'
                                            :class="{ 'is-invalid': errors?.entrypoint }"
                                            >
