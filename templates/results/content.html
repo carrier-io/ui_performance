@@ -138,7 +138,7 @@
 </div>
 
 {% if test_data['test_status']['status'].lower() in ['finished', 'error', 'failed', 'success'] %}
-<div class="card card-12 pb-4 card-table">
+<div class="card card-12 p-28 mt-3">
     <div class="card-header d-flex justify-content-between">
         <div class="d-flex justify-content-between align-items-center">
             <p class="font-h3 font-bold text-gray mr-4">Summary</p>
@@ -148,11 +148,8 @@
             <div class="selectpicker-titled mr-3">
                 <span class="font-h6 font-semibold px-3 item__left">METRIC</span>
                 <select class="selectpicker" data-style="item__right" id="metric">
-                    <option value="total">Load time</option>
-                    <option value="speed_index">Speed Index</option>
-                    <option value="time_to_first_byte">Time To First Byte</option>
-                    <option value="time_to_first_paint">Time To First Paint</option>
-                    <option value="dom_content_loading">DOM Content Loading</option>
+                    <option value="load_time">Load time</option>
+                    <option value="dom">DOM Content Loading</option>
                     <option value="tti">Time To Interactive</option>
                     <option value="fcp">First Contentful Paint</option>
                     <option value="lcp">Largest Contentful Paint</option>
@@ -172,9 +169,47 @@
             </ul>
         </div>
     </div>
-    <div class="card-body">
-        <div id="cy" class="card"></div>
+    <div class="position-relative">
+        <div>
+            <div class="d-flex mt-3">
+                <div class="chart flex-grow-1" style="position: relative">
+<!--                    <div id="chart-loader"-->
+<!--                         class="layout-spinner">-->
+<!--                        <i class="spinner-loader__32x32 spinner-centered"></i>-->
+<!--                    </div>-->
+                    <canvas id="barchart"></canvas>
+                </div>
+                <div class="card" style="width:280px; height: 500px; margin-left: 28px">
+                    <div class="d-flex flex-column p-3">
+                        <label
+                                class="mb-0 w-100 d-flex align-items-center custom-checkbox custom-checkbox__multicolor"
+                                for="all_checkbox">
+                            <input
+                                    class="mx-2 custom__checkbox"
+                                    onclick="selectOrUnselectRequests()"
+                                    checked="true" id="all_checkbox"
+                                    style="--cbx-color: var(--basic);"
+                                    type="checkbox">
+                            <span class="w-100 d-inline-block">Select/Unselect all</span>
+                        </label>
+                    </div>
+                    <hr class="my-0">
+                    <div id="chart-group-legend"
+                         class="custom-chart-legend d-flex flex-column px-3 py-3"
+                         style="height: 400px; overflow: scroll;"
+                    >
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex mt-24">
+            <div id="legend-container"></div>
+            <div style="width:280px;">
+        </div>
     </div>
+<!--    <div class="card-body">-->
+<!--        <div id="cy" class="card"></div>-->
+<!--    </div>-->
 </div>
 
 <div class="card card-12 pb-4 card-table">
