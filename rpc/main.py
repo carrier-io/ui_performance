@@ -1,16 +1,16 @@
+import boto3
 from typing import Optional, Union
 from uuid import uuid4
 from pylon.core.tools import web
 from pydantic import ValidationError
-
+from json import loads
 from ..models.pd.test_parameters import UITestParamsCreate, UITestParamsRun, UITestParams
 from ..models.pd.ui_test import TestOverrideable, TestCommon
 from ..models.ui_report import UIReport
-from ..models.ui_result import UIResult
 from ..models.ui_tests import UIPerformanceTest
 
 from tools import rpc_tools
-
+from ...shared.tools.constants import MINIO_ENDPOINT, MINIO_ACCESS, MINIO_SECRET, MINIO_REGION
 from ..utils.utils import run_test
 
 
@@ -21,9 +21,11 @@ class RPC:
         # todo: serialization via pydantic models
         if not report:
             report = UIReport.query.get_or_404(run_id)
-        results = UIResult.query.filter_by(report_uid=report.uid).all()
+        bucket = report.name.replace("_", "").lower()
+        file_name = f"{report.uid}.csv.gz"
+        results = self.get_ui_results(bucket, file_name, report.project_id)
 
-        totals = list(map(lambda x: x.total, results))
+        totals = list(map(lambda x: int(x["load_time"]), results))
 
         try:
             avg_page_load = sum(totals) / len(totals)
@@ -89,3 +91,42 @@ class RPC:
         test_params_existing_pd.update(test_params_schedule_pd)
         test.__dict__.update(test_params_existing_pd.dict())
         return run_test(test)
+
+    @web.rpc('get_ui_results', 'get_ui_results')
+    @rpc_tools.wrap_exceptions(RuntimeError)
+    def get_ui_results(self, bucket, file_name, project_id, skip_aggregated=True):
+        if skip_aggregated:
+            query = "select * from s3object s where s.loop != 0"
+        else:
+            query = "select * from s3object s"
+        s3 = boto3.client('s3',
+                          endpoint_url=MINIO_ENDPOINT,
+                          aws_access_key_id=MINIO_ACCESS,
+                          aws_secret_access_key=MINIO_SECRET,
+                          region_name=MINIO_REGION)
+
+        r = s3.select_object_content(
+            Bucket=f'p--{project_id}.{bucket}',
+            Key=f'{file_name}',
+            ExpressionType='SQL',
+            Expression=query,
+            InputSerialization={
+                'CSV': {
+                    "FileHeaderInfo": "USE",
+                },
+                'CompressionType': 'GZIP',
+            },
+            OutputSerialization={'JSON': {}},
+        )
+        results = []
+        for event in r['Payload']:
+            if 'Records' in event:
+                records = event['Records']['Payload'].decode('utf-8')
+                for each in records.split("\n"):
+                    try:
+                        rec = loads(each)
+                        results.append(rec)
+                    except:
+                        pass
+
+        return results

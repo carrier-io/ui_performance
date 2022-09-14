@@ -2,7 +2,7 @@ from flask_restful import Resource
 from pylon.core.tools import log
 from flask import current_app, request, make_response
 from ...models.ui_report import UIReport
-from ...models.ui_result import UIResult
+from ....shared.tools.minio_client import MinioClient
 from tools import api_tools
 from sqlalchemy import and_
 
@@ -40,11 +40,12 @@ class API(Resource):
         ).all()
 
         for each in query_result:
-            self.__delete_report_results(project_id, each.uid)
+            self.__delete_report_results(project, each)
             each.delete()
         return {"message": "deleted"}
 
-    def __delete_report_results(self, project_id, report_id):
-        results = UIResult.query.filter_by(project_id=project_id, report_uid=report_id).all()
-        for result in results:
-            result.delete()
+    def __delete_report_results(self, project, report):
+        bucket = report.name.replace("_", "").lower()
+        file_name = f"{report.uid}.csv.gz"
+        client = MinioClient(project=project)
+        client.remove_file(bucket, file_name)

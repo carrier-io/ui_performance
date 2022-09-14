@@ -1,4 +1,5 @@
 from flask_restful import Resource
+from datetime import datetime
 from pylon.core.tools import log
 from sqlalchemy import and_
 from ...models.ui_report import UIReport
@@ -27,21 +28,25 @@ class API(Resource):
                 data.append({
                     "name": each['name'],
                     "type": each['type'],
-                    "loops": {}
+                    "labels": [],
+                    "datasets": {
+                        "load_time": [],
+                        "dom": [],
+                        "tti": [],
+                        "fcp": [],
+                        "lcp": [],
+                        "cls": [],
+                        "tbt": [],
+                        "fvc": [],
+                        "lvc": []
+                    }
                 })
-
         for page in data:
             for each in results:
                 if each["name"] == page["name"]:
-                    page["loops"][f"{each['loop']}"] = {
-                        "load_time": each["load_time"],
-                        "dom": each["dom"],
-                        "tti": each["tti"],
-                        "fcp": each["fcp"],
-                        "lcp": each["lcp"],
-                        "cls": each["cls"],
-                        "tbt": each["tbt"],
-                        "fvc": each["fvc"],
-                        "lvc": each["lvc"]
-                    }
+                    page["labels"].append(
+                        datetime.strptime(each["timestamp"].replace("+00:00", ""), "%Y-%m-%dT%H:%M:%S").strftime("%m-%d %H:%M:%S"))
+                    for metric in ["load_time", "dom", "tti", "fcp", "lcp", "cls", "tbt", "fvc", "lvc"]:
+                        page["datasets"][metric].append(each[metric])
+
         return data, 200
