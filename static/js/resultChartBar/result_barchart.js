@@ -1,25 +1,23 @@
 const labels = [];
-
 const selectedLabels = {}
-
+let initialData = null;
 let countStacks = 0;
-
 let lineLabel = 'load_time';
-
 let normalizedData = null;
+let uiTimePicker = null;
 
-function pickLabels () {
-    newBarchartData.forEach(res => {
+function pickLabels (chartData) {
+    chartData.forEach(res => {
         if (!labels.includes(res.name)) {
             selectedLabels[res.name] = true;
             labels.push(res.name)
         }
     })
+    generateRequestList();
 }
 
-
-function calculateStacks() {
-    countStacks = Object.keys(newBarchartData[0].loops).length;
+function calculateStacks(chartData) {
+    countStacks = Object.keys(chartData[0].loops).length;
 }
 
 const generateLineDatasets = (chartData, selectedMetric) => {
@@ -31,7 +29,6 @@ const generateLineDatasets = (chartData, selectedMetric) => {
                 lineData.push(chartData[label][i][selectedMetric])
             }
         }
-
         lineDataset.push({
             label: `${lineLabel} loop(${i+1})`,
             data: lineData,
@@ -42,7 +39,6 @@ const generateLineDatasets = (chartData, selectedMetric) => {
             yAxisID: "y2",
         })
     }
-
     window.chart8.data.datasets = window.chart8.data.datasets.filter(ds => ds.type === 'bar');
     window.chart8.data.datasets.push(...lineDataset);
     window.chart8.update();
@@ -50,7 +46,6 @@ const generateLineDatasets = (chartData, selectedMetric) => {
 
 const generateBarDatasets = (chartData) => {
     const datasets = [];
-    calculateStacks();
     const lineDataset = [];
     valuesName.forEach((valueName, index) => {
         for (let i = 0; i < countStacks; i++) {
@@ -88,7 +83,6 @@ const generateBarDatasets = (chartData) => {
         }
     })
     datasets.push(...lineDataset)
-
     const labels = [];
     for (let key in selectedLabels) {
         if (selectedLabels[key]) {
@@ -101,15 +95,43 @@ const generateBarDatasets = (chartData) => {
     drawChart(labels, datasets)
 }
 
-const transformChartData = async () => {
-    // const result_test_id = new URLSearchParams(location.search).get('result_id')
-    // const data = await fetch(`/api/v1/ui_performance/barchart/${getSelectedProjectId()}/${result_test_id}`, {
-    //     method: 'GET',
-    // })
+const fetchData = async () => {
+    $('#chart-loader').show();
+    const result_test_id = new URLSearchParams(location.search).get('result_id')
+    const res = await fetch(`/api/v1/ui_performance/barchart/${getSelectedProjectId()}/${result_test_id}`, {
+        method: 'GET',
+    })
+    initialData = await res.json();
+    calculateStacks(initialData);
+    if (!labels.length) pickLabels(initialData);
 
-    pickLabels();
+    let low_value = 0;
+    let high_value = 100;
+    uiTimePicker = noUiSlider.create($("#vuh-perfomance-time-picker")[0], {
+        range: {
+            'min': 0,
+            'max': 100
+        },
+        start: [low_value, high_value],
+        connect: true,
+        format: wNumb({
+            decimals: 0
+        }),
+    })
 
-    normalizedData = newBarchartData.reduce((acc, page) => {
+    uiTimePicker.on('set', function(values) {
+        low_value = values[0]
+        high_value = values[1]
+        resizeChart();
+    });
+
+    normalizedData = normalizeData(initialData)
+    generateBarDatasets(normalizedData)
+    $('#chart-loader').hide();
+}
+
+function normalizeData(data) {
+    return data.reduce((acc, page) => {
         if(!selectedLabels[page.name]) return acc
         if (!acc[page.name]) {
             acc[page.name] = []
@@ -119,12 +141,22 @@ const transformChartData = async () => {
         }
         return acc;
     }, {})
-    generateBarDatasets(normalizedData)
 }
 
 function filterData (type, e) {
     selectedLabels[type] = e.target.checked;
-    transformChartData();
+    normalizedData = normalizeData(initialData)
+    generateBarDatasets(normalizedData);
+    if (isSomeSelected()) {
+        $('label[for="all_checkbox"]').addClass('custom-checkbox__minus');
+        $('#all_checkbox').prop('checked', false);
+    } else if(calcSelectedLabels() === 0) {
+        $('label[for="all_checkbox"]').removeClass('custom-checkbox__minus');
+        $('#all_checkbox').prop('checked', false);
+    } else {
+        $('label[for="all_checkbox"]').removeClass('custom-checkbox__minus');
+        $('#all_checkbox').prop('checked', true);
+    }
 }
 
 const trend_options = {
@@ -158,6 +190,10 @@ const trend_options = {
             stacked: true,
             ticks: {
                 beginAtZero: true
+            },
+            title: {
+                display: true,
+                text: 'Bar',
             }
         },
         y2: {
@@ -166,6 +202,10 @@ const trend_options = {
             stacked: false,
             grid: {
                 display: false,
+            },
+            title: {
+                display: true,
+                text: 'Line',
             }
         }
     },
@@ -204,8 +244,7 @@ function drawChart(labels, datasets) {
 }
 
 function renderBc() {
-    transformChartData();
-    generateRequestList();
+    fetchData();
     $('#metric').on("changed.bs.select", function() {
         lineLabel = this.value;
         generateLineDatasets(normalizedData, this.value);
@@ -213,17 +252,42 @@ function renderBc() {
 }
 
 function selectOrUnselectRequests() {
+    $('label[for="all_checkbox"]').removeClass('custom-checkbox__minus');
     if ($('#all_checkbox').is(":checked")) {
+        selectOrUnselectAllLabels(true);
         $('#chart-group-legend .custom__checkbox').each(function(i, ch) {
             if (ch.id != "all_checkbox") {
                 $('#'+ch.id).prop('checked', true);
             }
         });
     } else {
+        selectOrUnselectAllLabels(false);
         $('#chart-group-legend .custom__checkbox').each(function(i, ch) {
             if (ch.id != "all_checkbox") {
                 $('#'+ch.id).prop('checked', false);
             }
         });
     }
+    normalizedData = normalizeData(initialData)
+    generateBarDatasets(normalizedData);
+}
+
+function selectOrUnselectAllLabels(value) {
+    for (const label in selectedLabels) {
+        selectedLabels[label] = value;
+    }
+}
+
+function calcSelectedLabels() {
+    const countSelectedLabels = [];
+    for (const label in selectedLabels) {
+        if (selectedLabels[label]) {
+            countSelectedLabels.push(label)
+        }
+    }
+    return countSelectedLabels.length;
+}
+
+function isSomeSelected() {
+    return (calcSelectedLabels() < labels.length) && calcSelectedLabels() > 0;
 }

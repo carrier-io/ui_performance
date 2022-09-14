@@ -1,4 +1,6 @@
 <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+<script src="{{ url_for('design-system.static', filename='assets/vendor/nouislider/nouislider.js') }}"></script>
+<script src="{{ url_for('design-system.static', filename='assets/vendor/nouislider/wNumb.min.js') }}"></script>
 <script src="{{ url_for('ui_performance.static', filename='js/results.js') }}"></script>
 <script src="{{ url_for('ui_performance.static', filename='js/resultChartBar/mock.js') }}"></script>
 <script src="{{ url_for('ui_performance.static', filename='js/resultChartBar/htmlPlugin.js') }}"></script>
@@ -12,7 +14,6 @@
 <script>
 $(document).on('vue_init', () => {
     $(document).ready(function() {
-        // renderCy();
         renderBc();
     });
 })
