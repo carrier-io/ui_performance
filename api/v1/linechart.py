@@ -45,7 +45,7 @@ class API(Resource):
             for each in results:
                 if each["name"] == page["name"]:
                     page["labels"].append(
-                        datetime.strptime(each["timestamp"].replace("+00:00", ""), "%Y-%m-%dT%H:%M:%S").strftime("%m-%d %H:%M:%S"))
+                        datetime.strptime(each["timestamp"].replace("+00:00", ""), "%Y-%m-%dT%H:%M:%S").strftime("%Y-%m-%d %H:%M:%S"))
                     for metric in ["load_time", "dom", "tti", "fcp", "lcp", "cls", "tbt", "fvc", "lvc"]:
                         page["datasets"][metric].append(each[metric])
 
