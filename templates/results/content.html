@@ -138,12 +138,11 @@
 </div>
 
 {% if test_data['test_status']['status'].lower() in ['finished', 'error', 'failed', 'success'] %}
-<div class="card card-12 p-28 mt-3">
-    <ui-result-charts
-            @register="register"
-            instance_name="ui-result-charts">
-    </ui-result-charts>
-</div>
+
+<ui-result-charts
+        @register="register"
+        instance_name="ui-result-charts">
+</ui-result-charts>
 
 <div class="card card-12 pb-4 card-table">
     <div class="card-header d-flex justify-content-between">
