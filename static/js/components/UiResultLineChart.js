@@ -48,7 +48,7 @@ const UiResultLineChart = {
                 const data = page.datasets[metric].map((value, i) => {
                     return {
                         y: value,
-                        x: `2022-${page.labels[i]}`
+                        x: page.labels[i],
                     }
                 });
                 return {
