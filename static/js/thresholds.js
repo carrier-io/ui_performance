@@ -348,7 +348,13 @@ var threshold_formatters = {
         return row.aggregation + "(" + row.target + ") " + comparison
     },
     scopes(value, row, index) {
-        return row.scope.split("@")[1]
+        try {
+            sc = row.scope.split("@")[1]
+        }
+        catch {
+            sc = row.scope
+        }
+        return sc
     },
     action_events: {
         'click .action_edit': function (e, value, row, index) {
