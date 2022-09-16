@@ -23,9 +23,12 @@ class RPC:
             report = UIReport.query.get_or_404(run_id)
         bucket = report.name.replace("_", "").lower()
         file_name = f"{report.uid}.csv.gz"
-        results = self.get_ui_results(bucket, file_name, report.project_id)
+        try:
+            results = self.get_ui_results(bucket, file_name, report.project_id)
 
-        totals = list(map(lambda x: int(x["load_time"]), results))
+            totals = list(map(lambda x: int(x["load_time"]), results))
+        except:
+            totals = []
 
         try:
             avg_page_load = sum(totals) / len(totals)
