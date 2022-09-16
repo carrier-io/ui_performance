@@ -337,24 +337,17 @@ var threshold_formatters = {
         `
     },
     rules(value, row, index) {
-        let comparisonMap = new Map([
+        const comparison = new Map([
             ["gte", ">="],
             ["lte", "<="],
             ["lt", "<"],
             ["gt", ">"],
             ["eq", "=="]
-        ]);
-        comparison = comparisonMap.get(row.comparison)
-        return row.aggregation + "(" + row.target + ") " + comparison
+        ]).get(row.comparison)
+        return `${row.aggregation}(${row.target}) ${comparison}`
     },
     scopes(value, row, index) {
-        try {
-            sc = row.scope.split("@")[1]
-        }
-        catch {
-            sc = row.scope
-        }
-        return sc
+        return value.split("@")[1] || value
     },
     action_events: {
         'click .action_edit': function (e, value, row, index) {
