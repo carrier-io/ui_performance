@@ -289,7 +289,7 @@ const UiResultBarChart = {
             </div>
             <div class="d-flex mt-24">
                 <div id="legend-container"></div>
-                <div style="width:280px;">
+                <div style="width:280px;"></div>
             </div>
         </div>
 
