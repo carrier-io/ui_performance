@@ -262,9 +262,7 @@ const TestCreateModal = {
                                 <div class="invalid-feedback">[[ get_error_msg('runner') ]]</div>
                             </div>
                             
-                            <div class="row" 
-                                v-show="!lighthouse_selected"
-                            >
+                            <div class="row">
                                 <div class="form-group col-6">
                                     <p class="font-h5 font-semibold">Number of loops</p>
                                     <h13>How many times to repeat scenario execution.</h13>
@@ -445,20 +443,9 @@ const TestCreateModal = {
                 integrations: this.integrations?.get() || {},
                 schedules: this.schedules?.get() || [],
             }
-            if (!this.lighthouse_selected) {
+            // if (!this.lighthouse_selected) {
                 data.common_params.loops = this.loops
                 data.common_params.aggregation = this.aggregation
-            }
-            // let csv_files = {}
-            // $("#splitCSV .flex-row").slice(1,).each(function (_, item) {
-            //     const file = $(item).find('input[type=text]')
-            //     const header = $(item).find('input[type=checkbox]')
-            //     if (file[0].value) {
-            //         csv_files[file[0].value] = header[0].checked
-            //     }
-            // })
-            // if (Object.keys(csv_files).length > 0) {
-            //     data.common_params.cc_env_vars.csv_files = csv_files
             // }
             return data
         },
@@ -584,11 +571,6 @@ const TestCreateModal = {
             this.source.clear()
             this.integrations?.clear()
             this.schedules?.clear()
-            // $('#ui_parallel').text(this.parallel_runners)
-            // $('#ui_cpu').text(this.cpu_quota)
-            // $('#ui_memory').text(this.memory_quota)
-
-            // this.$refs.customization_component.clear()
         },
         clearErrors() {
             this.errors = {}
@@ -603,24 +585,6 @@ const TestCreateModal = {
     }
 }
 register_component('TestCreateModal', TestCreateModal)
-
-
-// function addCSVSplit(id, key = "", is_header = "") {
-//     $(`#${id}`).append(`<div class="d-flex flex-row">
-//     <div class="flex-fill">
-//         <input type="text" class="form-control form-control-alternative" placeholder="File Path" value="${key}">
-//     </div>
-//     <div class="flex-fill m-auto pl-3">
-//         <div class="form-check">
-//           <input class="form-check-input" type="checkbox" value="">
-//           <label class="form-check-label">Ignore first line</label>
-//         </div>
-//     </div>
-//     <div class="m-auto">
-//         <button type="button" class="btn btn-32 btn-action" onclick="removeParam(event)"><i class="fas fa-minus"></i></button>
-//     </div>
-// </div>`)
-// }
 
 
 const TestRunModal = {
