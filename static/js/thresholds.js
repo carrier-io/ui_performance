@@ -100,7 +100,7 @@ const ThresholdModal = {
                             <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
                                 v-model="target"
                             >
-                                <option value="load_time">Total Time</option>
+                                <option value="load_time">Load Time</option>
                                 <option value="time_to_first_byte">Time To First Bite</option>
                                 <option value="time_to_first_paint">Time To First Paint</option>
                                 <option value="dom_content_loading">Dom Content Load</option>
