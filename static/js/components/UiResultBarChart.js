@@ -41,9 +41,7 @@ const UiResultBarChart = {
                         id: "bar-stack",
                         position: "left",
                         stacked: true,
-                        ticks: {
-                            beginAtZero: true
-                        },
+                        min: 0,
                         title: {
                             display: true,
                             text: 'Bar',
@@ -53,6 +51,7 @@ const UiResultBarChart = {
                         id: "line",
                         position: "right",
                         stacked: false,
+                        min: 0,
                         grid: {
                             display: false,
                         },
@@ -121,9 +120,47 @@ const UiResultBarChart = {
                 return acc;
             }, {})
         },
+        setMaxYAxisValue(chartData) {
+            let maxAxisValue = 0;
+
+            for (const page in chartData) {
+                chartData[page].forEach(el => {
+                    const result = Object.values(el).reduce((acc, item) => {
+                        acc = acc + +item;
+                        return acc;
+                    }, 0)
+                    if (result > maxAxisValue) {
+                        maxAxisValue = result
+                    }
+                })
+            }
+
+            let divider = 1;
+            switch (true) {
+                case (maxAxisValue > 100000):
+                    divider = 10000;
+                    break;
+                case (maxAxisValue > 10000):
+                    divider = 1000;
+                    break;
+                case (maxAxisValue > 1000):
+                    divider = 100;
+                    break;
+                case (maxAxisValue > 100):
+                    divider = 10;
+                    break;
+            }
+            const maxYAxis = Math.round(Math.floor(maxAxisValue * 1.1) / divider) * divider;
+            this.chartOptions.scales.y.max = maxYAxis;
+            this.chartOptions.scales.y2.max = maxYAxis;
+        },
         generateBarDatasets (chartData) {
+
             const datasets = [];
             const lineDataset = [];
+
+            this.setMaxYAxisValue(chartData);
+
             valuesName.forEach((valueName, index) => {
                 for (let i = 0; i < this.countStacks; i++) {
                     const barData = [];
