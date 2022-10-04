@@ -92,17 +92,17 @@ class API(Resource):
                         "last_visual_change": {}, "load_time": {}, "time_to_first_paint": {}, "time_to_first_byte": {},
                         "dom_content_loading": {}, "dom_processing": {}, "time_to_interactive": {},
                         "total_blocking_time": {}}
-
-        for each in results_json.keys():
-            results_json[each]["mean"] = self.get_aggregated_value("avg", args["results"][each])
-            results_json[each]["min"] = self.get_aggregated_value("min", args["results"][each])
-            results_json[each]["max"] = self.get_aggregated_value("max", args["results"][each])
-            results_json[each]["pct50"] = self.get_aggregated_value("pct50", args["results"][each])
-            results_json[each]["pct75"] = self.get_aggregated_value("pct75", args["results"][each])
-            results_json[each]["pct90"] = self.get_aggregated_value("pct90", args["results"][each])
-            results_json[each]["pct95"] = self.get_aggregated_value("pct95", args["results"][each])
-            results_json[each]["pct99"] = self.get_aggregated_value("pct99", args["results"][each])
-            setattr(report, each, results_json[each])
+        if "results" in args.keys():
+            for each in results_json.keys():
+                results_json[each]["mean"] = self.get_aggregated_value("avg", args["results"][each])
+                results_json[each]["min"] = self.get_aggregated_value("min", args["results"][each])
+                results_json[each]["max"] = self.get_aggregated_value("max", args["results"][each])
+                results_json[each]["pct50"] = self.get_aggregated_value("pct50", args["results"][each])
+                results_json[each]["pct75"] = self.get_aggregated_value("pct75", args["results"][each])
+                results_json[each]["pct90"] = self.get_aggregated_value("pct90", args["results"][each])
+                results_json[each]["pct95"] = self.get_aggregated_value("pct95", args["results"][each])
+                results_json[each]["pct99"] = self.get_aggregated_value("pct99", args["results"][each])
+                setattr(report, each, results_json[each])
 
         report.duration = self.__diffdates(report.start_time, args["time"]).seconds
         exception = args["exception"]
