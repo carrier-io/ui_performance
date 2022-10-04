@@ -1,5 +1,5 @@
 from traceback import format_exc
-
+import math
 from flask_restful import Resource
 from pylon.core.tools import log
 from flask import current_app, request, make_response
@@ -87,6 +87,23 @@ class API(Resource):
         report.test_status = args["status"]
         report.thresholds_total = args["thresholds_total"],
         report.thresholds_failed = args["thresholds_failed"]
+
+        results_json = {"first_contentful_paint": {}, "largest_contentful_paint": {}, "first_visual_change": {},
+                        "last_visual_change": {}, "load_time": {}, "time_to_first_paint": {}, "time_to_first_byte": {},
+                        "dom_content_loading": {}, "dom_processing": {}, "time_to_interactive": {},
+                        "total_blocking_time": {}}
+        if "results" in args.keys():
+            for each in results_json.keys():
+                results_json[each]["mean"] = self.get_aggregated_value("avg", args["results"][each])
+                results_json[each]["min"] = self.get_aggregated_value("min", args["results"][each])
+                results_json[each]["max"] = self.get_aggregated_value("max", args["results"][each])
+                results_json[each]["pct50"] = self.get_aggregated_value("pct50", args["results"][each])
+                results_json[each]["pct75"] = self.get_aggregated_value("pct75", args["results"][each])
+                results_json[each]["pct90"] = self.get_aggregated_value("pct90", args["results"][each])
+                results_json[each]["pct95"] = self.get_aggregated_value("pct95", args["results"][each])
+                results_json[each]["pct99"] = self.get_aggregated_value("pct99", args["results"][each])
+                setattr(report, each, results_json[each])
+
         report.duration = self.__diffdates(report.start_time, args["time"]).seconds
         exception = args["exception"]
         if exception:
@@ -94,7 +111,7 @@ class API(Resource):
             report.passed = False
 
         report.commit()
-
+        log.info(report.to_json())
         return report.to_json()
 
     def delete(self, project_id: int):
@@ -114,3 +131,32 @@ class API(Resource):
         # Date format: %Y-%m-%d %H:%M:%S
         date_format = '%Y-%m-%d %H:%M:%S'
         return datetime.strptime(d2, date_format) - datetime.strptime(d1, date_format)
+
+    def get_aggregated_value(self, aggregation, metrics):
+        if len(metrics) == 0:
+            return 0
+        if aggregation == 'max':
+            return max(metrics)
+        elif aggregation == 'min':
+            return min(metrics)
+        elif aggregation == 'avg':
+            return int(sum(metrics) / len(metrics))
+        elif aggregation == 'pct95':
+            return self.percentile(metrics, 95)
+        elif aggregation == 'pct75':
+            return self.percentile(metrics, 75)
+        elif aggregation == 'pct90':
+            return self.percentile(metrics, 90)
+        elif aggregation == 'pct99':
+            return self.percentile(metrics, 99)
+        elif aggregation == 'pct50':
+            return self.percentile(metrics, 50)
+        else:
+            raise Exception(f"No such aggregation {aggregation}")
+
+    def percentile(self, data, percentile):
+        size = len(data)
+        if size:
+            return sorted(data)[int(math.ceil((size * percentile) / 100)) - 1]
+        else:
+            return 0

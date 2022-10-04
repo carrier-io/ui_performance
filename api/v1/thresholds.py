@@ -61,11 +61,11 @@ class API(Resource):
     def put(self, project_id: int, threshold_id: int):
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
         try:
-            pd_obj = ThresholdPD(project_id=project_id, **request.json)
+            pd_obj = ThresholdPD(project_id=project.id, **request.json)
         except ValidationError as e:
             return e.errors(), 400
         th_query = UIThresholds.query.filter(
-            UIThresholds.project_id == project_id,
+            UIThresholds.project_id == project.id,
             UIThresholds.id == threshold_id
         )
         th_query.update(pd_obj.dict())

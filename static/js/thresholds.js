@@ -100,7 +100,7 @@ const ThresholdModal = {
                             <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
                                 v-model="target"
                             >
-                                <option value="total">Total Time</option>
+                                <option value="load_time">Load Time</option>
                                 <option value="time_to_first_byte">Time To First Bite</option>
                                 <option value="time_to_first_paint">Time To First Paint</option>
                                 <option value="dom_content_loading">Dom Content Load</option>
@@ -337,18 +337,17 @@ var threshold_formatters = {
         `
     },
     rules(value, row, index) {
-        let comparisonMap = new Map([
+        const comparison = new Map([
             ["gte", ">="],
             ["lte", "<="],
             ["lt", "<"],
             ["gt", ">"],
             ["eq", "=="]
-        ]);
-        comparison = comparisonMap.get(row.comparison)
-        return row.aggregation + "(" + row.target + ") " + comparison
+        ]).get(row.comparison)
+        return `${row.aggregation}(${row.target}) ${comparison}`
     },
     scopes(value, row, index) {
-        return row.scope.split("@")[1]
+        return value.split("@")[1] || value
     },
     action_events: {
         'click .action_edit': function (e, value, row, index) {
