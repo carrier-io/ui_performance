@@ -45,8 +45,7 @@ class ThresholdPD(BaseModel):
     @validator('target')
     def validate_target(cls, value: str):
         assert value in {
-            'load_time', 'time_to_first_byte', 'time_to_first_paint', 'dom_content_loading',
-            'dom_processing', 'speed_index', 'time_to_interactive', 'first_contentful_paint',
+            'load_time', 'dom_processing', 'time_to_interactive', 'first_contentful_paint',
             'largest_contentful_paint', 'cumulative_layout_shift', 'total_blocking_time',
             'first_visual_change', 'last_visual_change'
         }, f'Target {value} is not supported'

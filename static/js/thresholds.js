@@ -101,11 +101,7 @@ const ThresholdModal = {
                                 v-model="target"
                             >
                                 <option value="load_time">Load Time</option>
-                                <option value="time_to_first_byte">Time To First Bite</option>
-                                <option value="time_to_first_paint">Time To First Paint</option>
-                                <option value="dom_content_loading">Dom Content Load</option>
                                 <option value="dom_processing">Dom Processing</option>
-                                <option value="speed_index">Speed Index</option>
                                 <option value="time_to_interactive">Time To Interactive</option>
                                 <option value="first_contentful_paint">First Contentful Paint</option>
                                 <option value="largest_contentful_paint">Largest Contentful Paint</option>
