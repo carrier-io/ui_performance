@@ -26,6 +26,13 @@ class API(Resource):
         if args.get("report_id"):
             report = UIReport.query.filter_by(project_id=project.id, id=args.get("report_id")).first().to_json()
             return report
+        if args.get("name") and args.get("count"):
+            reports = UIReport.query.filter_by(project_id=project_id, name=args['name']).order_by(
+                UIReport.id.desc()).limit(args['count'])
+            _reports = []
+            for each in reports:
+                _reports.append(each.to_json())
+            return _reports
         reports = []
         total, res = api_tools.get(project.id, args, UIReport)
         for each in res:
