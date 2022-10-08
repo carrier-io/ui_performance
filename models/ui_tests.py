@@ -13,6 +13,7 @@
 #     limitations under the License.
 
 from queue import Empty
+from collections import defaultdict
 from typing import List, Union, Optional
 from pylon.core.tools import log
 from sqlalchemy import Column, Integer, String, JSON, ARRAY, and_
@@ -161,6 +162,33 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         )
 
     def configure_execution_json(self, execution=False):
+        mark_for_delete = defaultdict(list)
+        for section, integration in self.integrations.items():
+            for integration_name, integration_data in integration.items():
+                try:
+                    extended_data = self.rpc.call_function_with_timeout(
+                        func=f'ui_performance_execution_json_config_{integration_name}',
+                        timeout=3,
+                        integration_id=integration_data.get('id'),
+                    )
+                    integration_data.update(extended_data)
+                except Empty:
+                    log.error(f'Cannot find execution json compiler for {integration_name}')
+                    mark_for_delete[section].append(integration_name)
+                except Exception as e:
+                    log.error('Error making config for %s %s', integration_name, str(e))
+                    mark_for_delete[section].append(integration_name)
+
+        for section, integrations in mark_for_delete.items():
+            for i in integrations:
+                log.warning(f'Some error occurred while building params for {section}/{i}. '
+                            f'Removing from execution json')
+                self.integrations[section].pop(i)
+        # remove empty sections
+        for section in mark_for_delete.keys():
+            if not self.integrations[section]:
+                self.integrations.pop(section)
+
         execution_json = {
             "test_id": self.test_uid,
             "container": self.container,
