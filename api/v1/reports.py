@@ -24,7 +24,10 @@ class API(Resource):
         args = request.args
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
         if args.get("report_id"):
-            report = UIReport.query.filter_by(project_id=project.id, id=args.get("report_id")).first().to_json()
+            if isinstance(args['report_id'], int):
+                report = UIReport.query.filter_by(project_id=project.id, id=args.get("report_id")).first().to_json()
+            else:
+                report = UIReport.query.filter_by(project_id=project.id, uid=args.get("report_id")).first().to_json()
             return report
         if args.get("name") and args.get("count"):
             reports = UIReport.query.filter_by(project_id=project_id, name=args['name']).order_by(
