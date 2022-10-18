@@ -1,5 +1,5 @@
 const UiResultBarChart = {
-    props: ['metric'],
+    props: ['metric', 'barChartData'],
     data() {
         lineChart: null
         return {
@@ -83,18 +83,12 @@ const UiResultBarChart = {
         },
     },
     methods: {
-        async fetchData () {
-            this.loading = true;
-            const result_test_id = new URLSearchParams(location.search).get('result_id')
-            const res = await fetch(`/api/v1/ui_performance/barchart/${getSelectedProjectId()}/${result_test_id}`, {
-                method: 'GET',
-            })
-            this.initialData = await res.json();
+        fetchData () {
+            this.initialData = [...this.barChartData];
             this.calculateStacks(this.initialData);
             if (!this.labels.length) this.pickLabels(this.initialData);
             this.normalizedData = this.normalizeData(this.initialData)
             this.generateBarDatasets(this.normalizedData);
-            this.loading = false;
         },
         calculateStacks(chartData) {
             this.countStacks = Object.keys(chartData[0].loops).length;

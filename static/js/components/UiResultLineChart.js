@@ -1,5 +1,5 @@
 const UiResultLineChart = {
-    props: ['metric'],
+    props: ['metric', 'lineChartData'],
     data() {
         lineChart: null
         return {
@@ -10,7 +10,7 @@ const UiResultLineChart = {
         }
     },
     mounted() {
-        this.fetchData();
+        this.generateDatasets(this.metric);
     },
     watch: {
         metric(newValue, oldValue) {
@@ -26,19 +26,9 @@ const UiResultLineChart = {
         }
     },
     methods: {
-        async fetchData () {
-            this.loading = true;
-            const result_test_id = new URLSearchParams(location.search).get('result_id')
-            const res = await fetch(`/api/v1/ui_performance/linechart/${getSelectedProjectId()}/${result_test_id}`, {
-                method: 'GET',
-            })
-            this.initialData = await res.json();
-            this.generateDatasets(this.metric);
-            this.loading = false;
-        },
         generateDatasets(metric, isUpdate = false) {
             if (isUpdate) this.selectedLegend = [];
-            const datasets = this.initialData.map((page, index) => {
+            const datasets = this.lineChartData.map((page, index) => {
                 this.selectedLegend.push(page.name)
                 const ds = {
                     backgroundColor: barColors[index],
