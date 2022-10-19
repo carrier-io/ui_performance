@@ -1,5 +1,33 @@
 const UiResultTable = {
-    props: ['url'],
+    props: ['url', 'selectedLoop'],
+    data() {
+        return {
+            dataTable: []
+        }
+    },
+    watch: {
+        selectedLoop(newValue, oldValue) {
+            const table = document.getElementById("ui_summary_table");
+            const tr = table.getElementsByTagName("tr");
+            if (newValue === 'all') {
+                for (let i = 0; i < tr.length; i++) {
+                    tr[i].style.display = "";
+                }
+                return
+            }
+            for (let i = 0; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                    const txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(newValue) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    },
     template: `
         <div class="card card-12 pb-4 card-table">
             <div class="card-header d-flex justify-content-between">

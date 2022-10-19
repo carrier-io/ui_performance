@@ -41,6 +41,7 @@ const UiResult = {
         
         <ui-result-table
             v-if="isTestFinished"
+            :selected-loop="selectedLoop"
             :url="url">
         </ui-result-table>
     `
