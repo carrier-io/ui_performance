@@ -43,6 +43,9 @@ const UiResultLineChart = {
                         x: page.labels[i]
                     })
                 })
+                data.sort((a, b) => {
+                    return new Date(b.x) - new Date(a.x);
+                })
                 dottedData.push({
                     borderDash: [10,5],
                     data,
