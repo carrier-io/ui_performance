@@ -3,6 +3,38 @@ const UiResultInfo = {
     components: {
         'uiperformancetestprogress': UIPerformanceTestProgress,
     },
+    data() {
+        return {
+            result_test_id: new URLSearchParams(location.search).get('result_id'),
+        }
+    },
+    computed: {
+        isTestFailed() {
+            return !['finished', 'error', 'failed', 'success']
+                .includes(this.test_data['test_status']['status'].toLowerCase())
+        }
+    },
+    methods: {
+        reRunTest () {
+            fetch(`/api/v1/ui_performance/rerun/${this.result_test_id}`, {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    response.json().then(({result_id}) => {
+                        alertMain.add(
+                            `Test rerun successful! Check out the <a href="?result_id=${result_id}">result page</a>`,
+                            'success-overlay',
+                            true
+                        )
+                    })
+                } else {
+                    response.text().then(data => {
+                        alertMain.add(data, 'danger')
+                    })
+                }
+            })
+        },
+    },
     template: `
         <div class="card card-12 pb-4">
             <div class="card-header">
@@ -15,6 +47,7 @@ const UiResultInfo = {
                     <div class="col-8">
                         <div class="d-flex justify-content-end">
                             <button type="button" class="btn btn-secondary"
+                                    @click="reRunTest"
                                     data-toggle="tooltip" data-placement="top" title="Rerun Test"><i class="fas fa-play"></i>
                             </button>
                             <button type="button" class="btn btn-secondary mx-2"
@@ -36,24 +69,20 @@ const UiResultInfo = {
                                         data-placement="top"
                                         title="Show config for current test run">Show config</span>
                             </button>
-<!--                            {% if test_data['test_status']['status'].lower() not in ['finished', 'error', 'failed', 'success'] %}-->
-<!--                            <button class="btn btn-danger mx-2" id="stop-test" onclick="stopTest()">-->
-<!--                                Stop test-->
-<!--                            </button>-->
-<!--                            {% endif %}-->
+                            <button v-if="isTestFailed" class="btn btn-danger mx-2" id="stop-test">
+                                Stop test
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card-body" id="progressbar-body">
-            {{ test_data['test_status']['status'].toLowerCase() }}
-<!--                {% if test_data['test_status']['status'].lower() not in ['finished', 'error', 'failed', 'success'] %}-->
-<!--                <uiperformancetestprogress-->
-<!--                        :test_status="test_data.test_status"-->
-<!--                        :project_id="test_data.project_id"-->
-<!--                        :test_id="test_data.id"-->
-<!--                ></uiperformancetestprogress>-->
-<!--                {% endif %}-->
+                <uiperformancetestprogress
+                    v-if="isTestFailed"
+                    :test_status="test_data.test_status"
+                    :project_id="test_data.project_id"
+                    :test_id="test_data.id"
+                ></uiperformancetestprogress>
             </div>
             <div class="card-body" id="ui-small-cards">
                 <div class="row">
