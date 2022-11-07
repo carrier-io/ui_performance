@@ -31,45 +31,19 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
     project_id = Column(Integer, unique=False, nullable=False)
     test_uid = Column(String(128), unique=True, nullable=False)
     name = Column(String(128), nullable=False)
-
-    # bucket = Column(String(128), nullable=False)
-    # file = Column(String(128), nullable=False)
-    # entrypoint = Column(String(128), nullable=False)
-    # runner = Column(String(128), nullable=False)
-    # region = Column(String(128), nullable=False)
-
     browser = Column(String(128), nullable=False)
-    # reporting = Column(ARRAY(String), nullable=False)
-    # parallel = Column(Integer, nullable=False)
-    # params = Column(JSON)
-    # env_vars = Column(JSON)
-    # customization = Column(JSON)
-    # git = Column(JSON)
-    # cc_env_vars = Column(JSON)
-    # job_type = Column(String(20))
-
     loops = Column(Integer, nullable=True)
     aggregation = Column(String(20), nullable=True)
-
-
     parallel_runners = Column(Integer, nullable=False)
     location = Column(String(128), nullable=False)
-
     entrypoint = Column(String(128), nullable=False)
     runner = Column(String(128), nullable=False)
-
-    # reporting = Column(ARRAY(JSON), nullable=False)  #- integrations?
-
     test_parameters = Column(ARRAY(JSON), nullable=True)
-
     integrations = Column(JSON, nullable=True)
-
     schedules = Column(ARRAY(Integer), nullable=True, default=[])
-
     env_vars = Column(JSON)
     customization = Column(JSON)
     cc_env_vars = Column(JSON)
-
     source = Column(JSON, nullable=False)
 
     @property
@@ -166,10 +140,8 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         for section, integration in self.integrations.items():
             for integration_name, integration_data in integration.items():
                 try:
-                    # we mutate/enrich integration_data with the result from rpc,
-                    # so it remains mutated in self.integrations,
-                    # but we never commit, so this is fine
-                    integration_data = self.rpc.call_function_with_timeout(
+                    # we never commit, so this is fine
+                    integration[integration_name] = self.rpc.call_function_with_timeout(
                         func=f'ui_performance_execution_json_config_{integration_name}',
                         timeout=3,
                         integration_data=integration_data,
