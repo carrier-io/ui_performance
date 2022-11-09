@@ -17,4 +17,17 @@ $(document).on('vue_init', () => {
     }
     disable_inputs()
     $('#show_config_btn').on('click', disable_inputs)
+
+    let result_id = new URLSearchParams(location.search).get('result_id')
+    const setBaseline = async () => {
+        await fetch(`/api/v1/ui_performance/baseline/${getSelectedProjectId()}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                report_id: result_id
+            })
+
+        })
+    }
+    $('#set_baseline').on('click', setBaseline)
 })

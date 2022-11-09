@@ -28,7 +28,7 @@ class API(Resource):
                 report_id = int(args.get("report_id"))
                 return UIReport.query.filter_by(project_id=project.id, id=report_id).first().to_json()
             except ValueError:
-                return UIReport.query.filter_by(project_id=project.id, uid=report_id).first().to_json()
+                return UIReport.query.filter_by(project_id=project.id, uid=args.get("report_id")).first().to_json()
         if args.get("name") and args.get("count"):
             reports = UIReport.query.filter_by(project_id=project.id, name=args['name']).order_by(
                 UIReport.id.desc()).limit(args['count'])
