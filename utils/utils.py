@@ -91,6 +91,17 @@ def parse_test_data(project_id: int, request_data: dict,
     errors = list()
 
     common_params = request_data.pop('common_params', {})
+    cloud_settings = common_params['env_vars']['cloud_settings']
+
+    if cloud_settings:
+        integration_name = cloud_settings.get("integration_name")
+
+        cloud_settings["cpu_cores_limit"] = common_params['env_vars']["cpu_quota"]
+        cloud_settings["memory_limit"] = common_params['env_vars']["memory_quota"]
+        cloud_settings["concurrency"] = common_params['parallel_runners']
+
+        request_data["integrations"]["clouds"] = {}
+        request_data["integrations"]["clouds"][integration_name] = cloud_settings
 
     try:
         test_data = rpc.call.ui_performance_test_create_common_parameters(
@@ -118,7 +129,7 @@ def parse_test_data(project_id: int, request_data: dict,
                 test_data.update({k: v})
         except ValidationError as e:
             for i in e.errors():
-                i['loc'] = [k, *i['loc']]
+                i['loc'] = (k, *i['loc'])
             errors.extend(e.errors())
 
             if raise_immediately:
