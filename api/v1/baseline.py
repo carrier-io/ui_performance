@@ -32,6 +32,6 @@ class API(Resource):
         baseline = UIBaseline(test=report["name"],
                               environment=report["environment"],
                               project_id=project.id,
-                              report_id=report_id)
+                              report_id=report["uid"])
         baseline.insert()
         return {"message": "baseline is set"}
