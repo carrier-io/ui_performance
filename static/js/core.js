@@ -325,6 +325,7 @@ const TestCreateModal = {
                     v-model:parallel_runners="parallel_runners"
                     v-model:cpu="cpu_quota"
                     v-model:memory="memory_quota"
+                    v-model:cloud_settings="cloud_settings"
                     
                     modal_id="ui"
                     
@@ -356,7 +357,7 @@ const TestCreateModal = {
     computed: {
         default_runner() {
             return this.$props.runners &&
-                this.$props.runners.includes('Sitespeed (browsertime)') ?
+            this.$props.runners.includes('Sitespeed (browsertime)') ?
                 'Sitespeed (browsertime)' :
                 this.$props.runners[0]
                 || null
@@ -420,6 +421,18 @@ const TestCreateModal = {
                 return acc === '' ? item.msg : [acc, item.msg].join('; ')
             }, '')
         },
+        compareObjectsDiff(o1, o2, required_fields) {
+            return Object.keys(o2).reduce((diff, key) => {
+                if (o1[key] !== o2[key] || required_fields.includes(key)) {
+                    return {
+                        ...diff,
+                        [key]: o2[key]
+                    }
+                } else {
+                    return diff
+                }
+            }, {})
+        },
         get_data() {
 
             const data = {
@@ -433,10 +446,16 @@ const TestCreateModal = {
                     env_vars: {
                         cpu_quota: this.cpu_quota,
                         memory_quota: this.memory_quota,
-                        ENV: this.env_type["default"]
+                        ENV: this.env_type["default"],
+                        cloud_settings: this.compareObjectsDiff(
+                            this.$refs.locations.chosen_location_settings,
+                            this.cloud_settings,
+                            ["id", "integration_name", "instance_type"]
+                        )
                     },
                     parallel_runners: this.parallel_runners,
                     cc_env_vars: {},
+                    location: this.location
                     // customization: this.customization,
                 },
                 test_parameters: this.test_parameters.get(),
@@ -444,8 +463,8 @@ const TestCreateModal = {
                 schedules: this.schedules?.get() || [],
             }
             // if (!this.lighthouse_selected) {
-                data.common_params.loops = this.loops
-                data.common_params.aggregation = this.aggregation
+            data.common_params.loops = this.loops
+            data.common_params.aggregation = this.aggregation
             // }
             return data
         },
@@ -516,6 +535,7 @@ const TestCreateModal = {
                 parallel_runners: 1,
                 cpu_quota: 1,
                 memory_quota: 4,
+                cloud_settings: {},
 
                 entrypoint: '',
                 runner: this.default_runner,
@@ -533,7 +553,7 @@ const TestCreateModal = {
         set(data) {
             const {test_parameters, integrations, schedules, source, env_vars: all_env_vars, ...rest} = data
 
-            const {cpu_quota, memory_quota, ...env_vars} = all_env_vars
+            const {cpu_quota, memory_quota, cloud_settings, ...env_vars} = all_env_vars
 
             let test_type = ''
             let env_type = ''
@@ -552,7 +572,7 @@ const TestCreateModal = {
                 return true
             })
             // common fields
-            Object.assign(this.$data, {...rest, cpu_quota, memory_quota, env_vars, test_type, env_type})
+            Object.assign(this.$data, {...rest, cpu_quota, memory_quota, cloud_settings, env_vars, test_type, env_type})
 
             // special fields
             this.test_parameters.set(test_parameters_filtered)
@@ -618,7 +638,8 @@ const TestRunModal = {
                             v-model:parallel_runners="parallel_runners"
                             v-model:cpu="cpu_quota"
                             v-model:memory="memory_quota"
-                            
+                            v-model:cloud_settings="cloud_settings"
+                                  
                             ref="locations"
                         ></Locations>
                         <slot name="integrations"></slot>
@@ -657,6 +678,7 @@ const TestRunModal = {
                 parallel_runners: 1,
                 cpu_quota: 1,
                 memory_quota: 4,
+                cloud_settings: {},
 
                 env_vars: {},
                 // customization: {},
@@ -669,10 +691,10 @@ const TestRunModal = {
             console.log('set data called', data)
             const {test_parameters, env_vars: all_env_vars, integrations, ...rest} = data
 
-            const {cpu_quota, memory_quota, ...env_vars} = all_env_vars
+            const {cpu_quota, cloud_settings, memory_quota, ...env_vars} = all_env_vars
 
             // common fields
-            Object.assign(this.$data, {...rest, cpu_quota, memory_quota, env_vars,})
+            Object.assign(this.$data, {...rest, cpu_quota, cloud_settings, memory_quota, env_vars,})
 
             // special fields
             this.test_parameters.set(test_parameters)
@@ -709,9 +731,11 @@ const TestRunModal = {
                     env_vars: {
                         cpu_quota: this.cpu_quota,
                         memory_quota: this.memory_quota,
+                        cloud_settings: this.cloud_settings,
                         ENV: env_type["default"]
                     },
-                    parallel_runners: this.parallel_runners
+                    parallel_runners: this.parallel_runners,
+                    location: this.location
                 },
                 test_parameters: test_params,
                 integrations: integrations,
