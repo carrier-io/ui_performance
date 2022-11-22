@@ -1,4 +1,6 @@
-from sqlalchemy import String, Column, Integer, Float, Text, Boolean, JSON
+from uuid import uuid4
+
+from sqlalchemy import String, Column, Integer, Float, Text, Boolean, JSON, ARRAY
 from tools import db_tools, db, rpc_tools, constants as c, secrets_tools
 
 
@@ -45,11 +47,14 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
     time_to_first_paint = Column(JSON, unique=False, nullable=True)
     load_time = Column(JSON, unique=False, nullable=True)
     total_blocking_time = Column(JSON, unique=False, nullable=True)
+    tags = Column(ARRAY(String), default=[])
 
-    # def insert(self):
-    #     if not self.test_config:
-    #         from .ui_tests import UIPerformanceTest
-    #         self.test_config = UIPerformanceTest.query.filter(
-    #             UIPerformanceTest.test_uid == self.test_uid  # todo: no self.test_uid
-    #         ).first().api_json()
-    #     super().insert()
+    def insert(self):
+        if not self.uid:
+            self.uid = uuid4()
+        if not self.test_config:
+            from .ui_tests import UIPerformanceTest
+            self.test_config = UIPerformanceTest.query.filter(
+                UIPerformanceTest.get_api_filter(self.project_id, self.test_uid)
+            ).first().api_json()
+        super().insert()
