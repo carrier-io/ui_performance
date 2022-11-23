@@ -45,20 +45,6 @@ const UiResultTable = {
                             </li>
                         </ul>
                     </div>
-                    <div class="d-flex">
-                        <select class="selectpicker btn-secondary_item__left" data-style="btn_item__left">
-                            <option data-content="Mustard<i class='fa fa-edit'></i>"></option>
-                            <option data-content="Ketchup<i class='fa fa-trash'></i>"></option>
-                            <option data-content="Relish<i class='fa fa-cog'></i>"></option>
-                        </select>
-                        <div class="dropdown dropdown_action">
-                            <button class="btn dropdown-toggle btn-secondary_item__right"
-                                    role="button"
-                                    aria-expanded="false">
-                                <i class="fa fa-cog"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -66,6 +52,8 @@ const UiResultTable = {
                        id="ui_summary_table"
                        :data-url="url"
                        data-toggle="table"
+                       data-sort-name="loop"
+                       data-sort-order="asc"
                        data-page-size=10
                        data-pagination="true"
                        data-pagination-parts='["pageInfoShort", "pageList"]'>
