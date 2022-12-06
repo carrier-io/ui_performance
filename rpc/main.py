@@ -8,6 +8,7 @@ from ..models.pd.test_parameters import UITestParamsCreate, UITestParamsRun, UIT
 from ..models.pd.ui_test import TestOverrideable, TestCommon
 from ..models.ui_report import UIReport
 from ..models.ui_tests import UIPerformanceTest
+from ..models.pd.quality_gate import QualityGate
 
 from tools import rpc_tools
 from ...shared.tools.constants import MINIO_ENDPOINT, MINIO_ACCESS, MINIO_SECRET, MINIO_REGION
@@ -58,6 +59,15 @@ class RPC:
         ).first()
         if test:
             return test.job_type
+
+    @web.rpc(f'ui_performance_test_create_integration_validate_quality_gate')
+    @rpc_tools.wrap_exceptions(ValidationError)
+    def ui_performance_test_create_integration_validate(self, data: dict, pd_kwargs: Optional[dict] = None, **kwargs) -> dict:
+        if not pd_kwargs:
+            pd_kwargs = {}
+        pd_object = QualityGate(**data)
+        return pd_object.dict(**pd_kwargs)
+
 
     @web.rpc('ui_performance_test_create_common_parameters', 'parse_common_test_parameters')
     def parse_common_test_parameters(self, project_id: int, test_params: dict, **kwargs) -> dict:

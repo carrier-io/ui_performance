@@ -68,6 +68,18 @@ class Module(module.ModuleModel):
             kind="slot",
             prefix="ui_results_",
         )
+        
+        self.context.rpc_manager.call.integrations_register_section(
+            name='Processing',
+            integration_description='Manage processing',
+            test_planner_description='Specify processing tools. You may also set processors in <a '
+                                     'href="{}">Integrations</a> '.format('/-/configuration/integrations/')
+        )
+
+        self.context.rpc_manager.call.integrations_register(
+            name='quality_gate',
+            section='Processing',
+        )
 
         self.descriptor.init_slots()
 
