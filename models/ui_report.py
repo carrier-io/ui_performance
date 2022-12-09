@@ -1,6 +1,7 @@
 from uuid import uuid4
 
-from sqlalchemy import String, Column, Integer, Float, Text, Boolean, JSON, ARRAY
+from ..utils.utils import get_bucket_name, get_report_file_name
+from sqlalchemy import String, Column, Integer, Boolean, JSON, ARRAY, DateTime
 from tools import db_tools, db, rpc_tools, constants as c, secrets_tools
 
 
@@ -19,8 +20,8 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
             "description": "Check if there are enough workers to perform the test"
         }
     )
-    start_time = Column(String(128), unique=False)
-    stop_time = Column(String(128), unique=False)
+    start_time = Column(DateTime, unique=False)
+    end_time = Column(DateTime, unique=False)
     duration = Column(Integer, unique=False, nullable=True)
     is_active = Column(Boolean, unique=False)
     browser = Column(String(128), unique=False)
@@ -61,3 +62,12 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
                 UIPerformanceTest.get_api_filter(self.project_id, self.test_uid)
             ).first().api_json()
         super().insert()
+
+    @property
+    def bucket_name(self):
+        return get_bucket_name(self.name)
+
+    @property
+    def report_file_name(self):
+        return get_report_file_name(self.uid)
+

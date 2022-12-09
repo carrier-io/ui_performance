@@ -1,6 +1,9 @@
+from datetime import datetime
 from typing import Optional
+
+from pydantic import BaseModel, validator
 from sqlalchemy import JSON, cast, Integer, String, literal_column, desc, asc, func
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from pylon.core.tools import web, log
 
@@ -8,10 +11,35 @@ from tools import rpc_tools
 
 from ..models.ui_baseline import UIBaseline
 from ..models.ui_report import UIReport
+from ..utils.utils import get_bucket_name, get_report_file_name
+
+
+class ReportBuilderReflection(BaseModel):
+    id: int
+    uid: str
+    name: str
+    bucket_name: Optional[str]
+    report_file_name: Optional[str]
+
+    @validator('bucket_name', always=True)
+    def set_bucket_name(cls, value: str, values: dict):
+        return get_bucket_name(values['name'])
+
+    @validator('report_file_name', always=True)
+    def set_report_file_name(cls, value: str, values: dict):
+        return get_report_file_name(values['uid'])
+
+    # @property
+    # def bucket_name(self):
+    #     self
+
+    class Config:
+        orm_mode = True
 
 
 columns = OrderedDict((
     ('id', UIReport.id),
+    ('uid', UIReport.uid),
     ('group', literal_column("'ui_performance'").label('group')),
     ('name', UIReport.name),
     ('start_time', UIReport.start_time),
@@ -83,3 +111,75 @@ class RPC:
 
         return tuple(zip(columns.keys(), i) for i in query.all())
 
+    @web.rpc('ui_performance_get_builder_data', 'get_builder_data')
+    @rpc_tools.wrap_exceptions(RuntimeError)
+    def query_builder_data(self, project_id: int, report_ids: list) -> dict:
+        reports = UIReport.query.filter(
+            UIReport.project_id == project_id,
+            UIReport.id.in_(report_ids)
+        ).all()
+        return self.compile_builder_data(project_id, reports)
+
+    @web.rpc('ui_performance_compile_builder_data', 'compile_builder_data')
+    @rpc_tools.wrap_exceptions(RuntimeError)
+    def compile_builder_data(self, project_id: int, reports: list):
+        data = dict()
+        page_names = set()
+        earliest_date = None
+        # data = {
+        #     8: {
+        #         1: {
+        #             'timestamp': '',
+        #             ...
+        #         },
+        #         2: {
+        #
+        #         },
+        #         3: {
+        #
+        #         }
+        #     }
+        # }
+        for report in reports:
+            if isinstance(report, dict):
+                report_reflection = ReportBuilderReflection.parse_obj(report)
+            else:
+                report_reflection = ReportBuilderReflection.from_orm(report)
+
+            log.info(report_reflection.dict())
+
+            results = self.get_ui_results(
+                report_reflection.bucket_name,
+                report_reflection.report_file_name,
+                project_id
+            )
+            data[report_reflection.id] = dict()
+
+            for r in results:
+                page_names.add(r['name'])
+                if not data[report_reflection.id].get(r['loop']):
+                    data[report_reflection.id][r['loop']] = defaultdict(list)
+
+                for metric_name, metric_value in r.items():
+                    if metric_name not in {'loop', 'identifier', 'file_name'}:
+                        try:
+                            mv = int(metric_value)
+                        except ValueError:
+                            mv = metric_value
+                        # data[report.id][r['loop']][metric_name].append({x: timestamp, y: mv})
+                        data[report_reflection.id][r['loop']][metric_name].append(mv)
+
+                        if metric_name == 'timestamp':
+
+                            current_date = datetime.fromisoformat(mv)
+                            if earliest_date is None or earliest_date > current_date:
+                                earliest_date = current_date
+                            # if earliest_date < current_date:
+                            #     earliest_date = current_date
+                            # log.info('%s | earliest_date[%s] %s | current_date[%s] %s', earliest_date is None or earliest_date > current_date, type(earliest_date), earliest_date, type(current_date), current_date)
+
+        return {
+            'datasets': data,
+            'page_names': list(page_names),
+            'earliest_date': earliest_date.isoformat()
+        }
