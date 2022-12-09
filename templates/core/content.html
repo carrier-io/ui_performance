@@ -1,5 +1,5 @@
 {% set modal_id = 'create_modal' %}
-    <div class="flex-container">
+    <div class="mt-3 flex-container">
         <div class="flex-item-2">
             <Table-Card
                     @register="register"
@@ -14,20 +14,23 @@
             >
                 <template #actions="{master}">
                     <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple mr-2" data-toggle="modal"
+                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple mr-2"
+                                data-toggle="modal"
                                 data-target="#{{ modal_id }}">
                             <i class="icon__18x18 icon-create-element"></i>
                         </button>
-                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple mr-2" @click="master.table_action('refresh')">
+                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple mr-2"
+                                @click="master.table_action('refresh')">
                             <i class="icon__18x18 icon-refresh"></i>
                         </button>
-                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple" id="delete_tests" disabled><i
+                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple" id="delete_tests"
+                                disabled><i
                                 class="icon__18x18 icon-delete"></i>
                         </button>
                     </div>
                 </template>
                 <template #table_headers>
-                  =
+                    =
                     <th data-visible="false" data-field="id">index</th>
                     <th scope="col" data-sortable="true"
                         data-cell-style="test_formatters.name_style"
@@ -54,7 +57,7 @@
                         Tool
                     </th>
                     <th scope="col" data-align="right"
-{#                        data-cell-style="test_formatters.cell_style"#}
+                            {#                        data-cell-style="test_formatters.cell_style"#}
                         data-width="165" data-width-unit="px"
                         data-formatter=test_formatters.actions
                         data-events="test_formatters.action_events"
@@ -81,11 +84,12 @@
     >
         <template #actions="{master}">
             <div class="d-flex justify-content-end">
-                <button type="button" class="btn btn-secondary btn-icon btn-icon__purple mr-2" @click="master.table_action('refresh')">
+                <button type="button" class="btn btn-secondary btn-icon btn-icon__purple mr-2"
+                        @click="master.table_action('refresh')">
                     <i class="icon__18x18 icon-refresh"></i>
                 </button>
-{#                <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-filter"></i></button>#}
-{#                <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-tag"></i></button>#}
+                {#                <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-filter"></i></button>#}
+                {#                <button type="button" class="btn btn-32 btn-secondary"><i class="fas fa-tag"></i></button>#}
                 <button type="button" class="btn btn-secondary btn-icon btn-icon__purple" id="delete_results">
                     <i class="icon__18x18 icon-delete"></i>
                 </button>
@@ -99,7 +103,10 @@
             >
                 Name
             </th>
-            <th scope="col" data-sortable="true" data-field="start_time">Date</th>
+            <th scope="col" data-sortable="true" data-field="start_time"
+                data-formatter="report_formatters.date_formatter"
+            >Date
+            </th>
             <th scope="col" data-sortable="true" data-field="duration">Duration</th>
             <th scope="col" data-sortable="true" data-field="test_type">Test Type</th>
             <th scope="col" data-sortable="true" data-field="environment">Env</th>
@@ -113,13 +120,13 @@
         </template>
     </Table-Card>
 
-    {% with modal_id=modal_id, runners=runners %}
-        {% include 'ui_performance:core/create.html' %}
-    {% endwith %}
-    {% include 'ui_performance:core/runtest.html' %}
-    <Docker-Command-Modal
+{% with modal_id=modal_id, runners=runners %}
+    {% include 'ui_performance:core/create.html' %}
+{% endwith %}
+{% include 'ui_performance:core/runtest.html' %}
+<Docker-Command-Modal
         @register="register"
         instance_name="docker_command"
         modal_id="docker_command_modal"
-    >
-    </Docker-Command-Modal>
+>
+</Docker-Command-Modal>

@@ -1,6 +1,5 @@
 import boto3
 from typing import Optional, Union
-from uuid import uuid4
 from pylon.core.tools import web
 from pydantic import ValidationError
 from json import loads
@@ -13,43 +12,28 @@ from ..models.pd.quality_gate import QualityGate
 from tools import rpc_tools
 from ...shared.tools.constants import MINIO_ENDPOINT, MINIO_ACCESS, MINIO_SECRET, MINIO_REGION
 from ..utils.utils import run_test
-
+from ..models.pd.report import ReportGetModel
 
 class RPC:
     @web.rpc('ui_results_or_404', 'results_or_404')
     @rpc_tools.wrap_exceptions(RuntimeError)
-    def ui_results_or_404(self, run_id, report=None):
-        # todo: serialization via pydantic models
+    def ui_results_or_404(self, run_id, report=None) -> dict:
         if not report:
             report = UIReport.query.get_or_404(run_id)
         bucket = report.name.replace("_", "").lower()
         file_name = f"{report.uid}.csv.gz"
         try:
             results = self.get_ui_results(bucket, file_name, report.project_id)
-
             totals = list(map(lambda x: int(x["load_time"]), results))
         except:
             totals = []
 
-        try:
-            avg_page_load = sum(totals) / len(totals)
-        except ZeroDivisionError:
-            avg_page_load = 0
 
-        try:
-            thresholds_missed = round(report.thresholds_failed / report.thresholds_total * 100, 2)
-        except ZeroDivisionError:
-            thresholds_missed = 0
 
-        data = dict(id=report.id, uid=report.uid, project_id=report.project_id, name=report.name,
-                    browser=report.browser, test_type=report.test_type, env_type=report.environment,
-                    browser_version=report.browser_version, resolution="1380x749", total_pages=len(totals),
-                    end_time=report.stop_time, start_time=report.start_time, duration=report.duration,
-                    failures=thresholds_missed, thresholds_missed=thresholds_missed, aggregation=report.aggregation,
-                    avg_page_load=round(avg_page_load / 1000, 2), tags=[], loops=report.loops,
-                    avg_step_duration=0.5, build_id=str(uuid4()), release_id=1, test_status=report.test_status,
-                    test_config=report.test_config, )
-        return data
+        pd_obj = ReportGetModel.from_orm(report)
+        pd_obj.totals = totals
+        return pd_obj.validate(pd_obj).dict(exclude={'totals'}, by_alias=True)
+
 
     @web.rpc('ui_performance_job_type_by_uid')
     @rpc_tools.wrap_exceptions(RuntimeError)
@@ -107,7 +91,7 @@ class RPC:
 
     @web.rpc('get_ui_results', 'get_ui_results')
     @rpc_tools.wrap_exceptions(RuntimeError)
-    def get_ui_results(self, bucket, file_name, project_id, skip_aggregated=True):
+    def get_ui_results(self, bucket: str, file_name: str, project_id: int, skip_aggregated: bool = True) -> list:
         if skip_aggregated:
             query = "select * from s3object s where s.loop != 0"
         else:
