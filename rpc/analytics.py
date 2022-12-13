@@ -36,6 +36,18 @@ class ReportBuilderReflection(BaseModel):
     class Config:
         orm_mode = True
 
+class ReportResultsModel(BaseModel):
+    timestamp: str
+    type: str
+    load_time: int
+    dom: int
+    tti: int
+    fcp: int
+    lcp: int
+    cls: int
+    tbt: int
+    fvc: int
+    lvc: int
 
 columns = OrderedDict((
     ('id', UIReport.id),
@@ -156,27 +168,36 @@ class RPC:
             data[report_reflection.id] = dict()
 
             for r in results:
-                page_names.add(r['name'])
-                if not data[report_reflection.id].get(r['loop']):
-                    data[report_reflection.id][r['loop']] = defaultdict(list)
+                page_name = r.pop('name')
+                page_names.add(page_name)
+                loop = int(r.pop('loop'))
+                result_model = ReportResultsModel.parse_obj(r)
 
-                for metric_name, metric_value in r.items():
-                    if metric_name not in {'loop', 'identifier', 'file_name'}:
-                        try:
-                            mv = int(metric_value)
-                        except ValueError:
-                            mv = metric_value
-                        # data[report.id][r['loop']][metric_name].append({x: timestamp, y: mv})
-                        data[report_reflection.id][r['loop']][metric_name].append(mv)
+                if not data[report_reflection.id].get(page_name):
+                    data[report_reflection.id][page_name] = dict()
+                data[report_reflection.id][page_name][loop] = result_model.dict()
 
-                        if metric_name == 'timestamp':
+                current_date = datetime.fromisoformat(result_model.timestamp)
+                if earliest_date is None or earliest_date > current_date:
+                    earliest_date = current_date
 
-                            current_date = datetime.fromisoformat(mv)
-                            if earliest_date is None or earliest_date > current_date:
-                                earliest_date = current_date
-                            # if earliest_date < current_date:
-                            #     earliest_date = current_date
-                            # log.info('%s | earliest_date[%s] %s | current_date[%s] %s', earliest_date is None or earliest_date > current_date, type(earliest_date), earliest_date, type(current_date), current_date)
+                # continue
+                #
+                # if not data[report_reflection.id].get(r['loop']):
+                #     data[report_reflection.id][r['loop']] = defaultdict(list)
+                #
+                # for metric_name, metric_value in r.items():
+                #     if metric_name not in {'loop', 'identifier', 'file_name'}:
+                #         try:
+                #             mv = int(metric_value)
+                #         except ValueError:
+                #             mv = metric_value
+                #         data[report_reflection.id][r['loop']][metric_name].append(mv)
+                #
+                #         if metric_name == 'timestamp':
+                #             current_date = datetime.fromisoformat(mv)
+                #             if earliest_date is None or earliest_date > current_date:
+                #                 earliest_date = current_date
 
         return {
             'datasets': data,
