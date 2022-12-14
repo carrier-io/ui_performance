@@ -45,6 +45,9 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
     time_to_first_paint = Column(JSON, unique=False, nullable=True)
     load_time = Column(JSON, unique=False, nullable=True)
     total_blocking_time = Column(JSON, unique=False, nullable=True)
+    
+    #engagement id
+    engagement = Column(String(64), nullable=True, default=None)
 
     # def insert(self):
     #     if not self.test_config:
