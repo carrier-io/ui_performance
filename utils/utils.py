@@ -16,9 +16,8 @@ def test_parameter_value_by_name(test_parameters: List[dict], param_name: str) -
             return i['default']
 
 
-def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bool = False) -> dict:
+def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bool = False, engagement_id: str = None) -> dict:
     event = test.configure_execution_json(execution=execution)
-
     if config_only:
         return event
 
@@ -36,7 +35,8 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
         loops=test.loops,
         aggregation=test.aggregation,
         test_config=test.api_json(),
-        test_uid=test.test_uid
+        test_uid=test.test_uid,
+        engagement=engagement_id
     )
     report.insert()
     event["cc_env_vars"]["REPORT_ID"] = str(report.uid)
@@ -91,7 +91,7 @@ def parse_test_data(project_id: int, request_data: dict,
     errors = list()
 
     common_params = request_data.pop('common_params', {})
-    cloud_settings = common_params['env_vars']['cloud_settings']
+    cloud_settings = common_params.get('env_vars', {}).get('cloud_settings')
 
     if cloud_settings:
         integration_name = cloud_settings.get("integration_name")

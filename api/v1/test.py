@@ -3,6 +3,7 @@ from typing import Union
 
 from flask import request
 from flask_restful import Resource
+from pylon.core.tools import log
 
 from ...models.pd.test_parameters import UITestParams, UITestParam
 from ...models.ui_tests import UIPerformanceTest
@@ -82,7 +83,11 @@ class API(Resource):
         """ Run test with possible overridden params """
         config_only_flag = request.json.pop('type', False)
         execution_flag = request.json.pop('execution', True)
+        engagement_id = request.json.get('integrations', {}).get('reporters', {})\
+            .get('reporter_engagement', {}).get('id')
+        
         purpose = 'run'
+
         if 'params' in request.json:
             purpose = 'control_tower'
             request.json['test_parameters'] = request.json.pop('params')
@@ -119,9 +124,9 @@ class API(Resource):
 
         if config_only_flag == '_test':
             return {
-                       'test': test.to_json(),
-                       'config': run_test(test, config_only=True, execution=execution_flag),
-                       'api_json': test.api_json(),
+                    'test': test.to_json(),
+                    'config': run_test(test, config_only=True, execution=execution_flag),
+                    'api_json': test.api_json(),
                    }, 200
-        resp = run_test(test, config_only=config_only_flag, execution=execution_flag)
+        resp = run_test(test, config_only=config_only_flag, execution=execution_flag, engagement_id=engagement_id)
         return resp, resp.get('code', 200)

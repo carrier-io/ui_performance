@@ -68,6 +68,10 @@ class API(Resource):
         Create test and run on demand
         """
         run_test_ = request.json.pop('run_test', False)
+        engagement_id = request.json.get('integrations', {}).get('reporters', {})\
+            .get('reporter_engagement', {}).get('id')
+
+
         test_data, errors = parse_test_data(
             project_id=project_id,
             request_data=request.json,
@@ -106,6 +110,6 @@ class API(Resource):
         test.handle_change_schedules(schedules)
 
         if run_test_:
-            resp = run_test(test)
+            resp = run_test(test, engagement_id=engagement_id)
             return resp, resp.get('code', 200)
         return test.api_json(), 200
