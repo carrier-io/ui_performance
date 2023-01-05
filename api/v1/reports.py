@@ -110,7 +110,7 @@ class API(Resource):
                 results_json[each]["pct99"] = self.get_aggregated_value("pct99", args["results"][each])
                 setattr(report, each, results_json[each])
 
-        report.duration = (report.end_time - report.start_time).seconds
+        report.duration = (report.end_time - report.start_time).total_seconds()
         exception = args.get("exception")
         if exception:
             report.exception = exception
