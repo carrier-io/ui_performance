@@ -68,6 +68,10 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
         return get_bucket_name(self.name)
 
     @property
+    def bucket_name(self):
+        return get_bucket_name(self.name)
+
+    @property
     def report_file_name(self):
         return get_report_file_name(self.uid)
 
