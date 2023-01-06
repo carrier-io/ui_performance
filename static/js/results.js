@@ -20,7 +20,7 @@ $(document).on('vue_init', () => {
 
     let result_id = new URLSearchParams(location.search).get('result_id')
     const setBaseline = async () => {
-        await fetch(`/api/v1/ui_performance/baseline/${getSelectedProjectId()}`, {
+        const resp = await fetch(`/api/v1/ui_performance/baseline/${getSelectedProjectId()}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -28,6 +28,7 @@ $(document).on('vue_init', () => {
             })
 
         })
+        resp.ok ? showNotify('SUCCESS', 'Baseline set') : showNotify('ERROR', 'Error settings baseline')
     }
     $('#set_baseline').on('click', setBaseline)
 })

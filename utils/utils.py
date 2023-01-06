@@ -143,3 +143,11 @@ def parse_test_data(project_id: int, request_data: dict,
                 return test_data, errors
 
     return test_data, errors
+
+
+def get_bucket_name(test_name: str) -> str:
+    return test_name.replace('_', '').lower()
+
+
+def get_report_file_name(uid: str) -> str:
+    return f'{uid}.csv.gz'

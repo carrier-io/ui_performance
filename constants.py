@@ -6,3 +6,7 @@ RUNNER_MAPPING = {
     'Lighthouse-Nodejs': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}',
     'Sitespeed (browsertime)': f'getcarrier/observer-browsertime:{c.CURRENT_RELEASE}'
 }
+
+if c.LOCAL_DEV:
+    RUNNER_MAPPING['Lighthouse local'] = 'getcarrier/observer-lighthouse-nodejs:local'
+    RUNNER_MAPPING['Sitespeed local'] = 'getcarrier/observer-browsertime:local'

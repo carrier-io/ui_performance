@@ -36,12 +36,8 @@ class API(Resource):
             for each in reports:
                 _reports.append(each.to_json())
             return _reports
-        reports = []
         total, res = api_tools.get(project.id, args, UIReport)
-        for each in res:
-            each_json = each.to_json()
-            each_json["start_time"] = each_json["start_time"].replace("T", " ").split(".")[0]
-            reports.append(each_json)
+        reports = [i.to_json() for i in res]
         return {"total": total, "rows": reports}
 
     def post(self, project_id: int):
@@ -93,7 +89,7 @@ class API(Resource):
         args = request.json
         report = UIReport.query.filter_by(project_id=project_id, uid=args['report_id']).first_or_404()
         report.is_active = False
-        report.stop_time = args["time"]
+        report.end_time = datetime.strptime(args["time"], '%Y-%m-%d %H:%M:%S')
         report.test_status = args["status"]
         report.thresholds_total = args["thresholds_total"],
         report.thresholds_failed = args["thresholds_failed"]
@@ -114,15 +110,14 @@ class API(Resource):
                 results_json[each]["pct99"] = self.get_aggregated_value("pct99", args["results"][each])
                 setattr(report, each, results_json[each])
 
-        report.duration = self.__diffdates(report.start_time, args["time"]).seconds
-        exception = args["exception"]
+        report.duration = (report.end_time - report.start_time).total_seconds()
+        exception = args.get("exception")
         if exception:
             report.exception = exception
             report.passed = False
 
         report.commit()
-        log.info(report.to_json())
-        return report.to_json()
+        return report.to_json(), 200
 
     def delete(self, project_id: int):
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
@@ -136,11 +131,6 @@ class API(Resource):
         ).delete()
         UIReport.commit()
         return {"message": "deleted"}, 204
-
-    def __diffdates(self, d1, d2):
-        # Date format: %Y-%m-%d %H:%M:%S
-        date_format = '%Y-%m-%d %H:%M:%S'
-        return datetime.strptime(d2, date_format) - datetime.strptime(d1, date_format)
 
     def get_aggregated_value(self, aggregation, metrics):
         if len(metrics) == 0:
