@@ -11,7 +11,7 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-
+import json
 from queue import Empty
 from collections import defaultdict
 from typing import List, Union, Optional
@@ -173,7 +173,7 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         execution_json = {
             "test_id": self.test_uid,
             "container": self.container,
-            "execution_params": execution_params,
+            "execution_params": json.dumps(execution_params),
             "cc_env_vars": CcEnvVars.from_orm(self).dict(exclude_none=True),
             "job_name": self.name,
             "job_type": self.job_type,
