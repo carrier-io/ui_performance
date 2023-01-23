@@ -11,7 +11,7 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-
+import json
 from queue import Empty
 from collections import defaultdict
 from typing import List, Union, Optional
@@ -81,7 +81,8 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
                        '--test_id={test_id}'
         return cmd_template.format(
             project_id=self.project_id,
-            galloper_url=secrets_tools.unsecret("{{secret.galloper_url}}", project_id=self.project_id),
+            galloper_url=secrets_tools.unsecret("{{secret.galloper_url}}",
+                                                project_id=self.project_id),
             token=secrets_tools.unsecret("{{secret.auth_token}}", project_id=self.project_id),
             control_tower_version=c.CURRENT_RELEASE,
             test_id=self.test_uid
@@ -102,7 +103,8 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         schedule_data['test_id'] = self.id
         schedule_data['project_id'] = self.project_id
         try:
-            schedule_id = self.rpc.timeout(2).scheduling_ui_performance_create_schedule(data=schedule_data)
+            schedule_id = self.rpc.timeout(2).scheduling_ui_performance_create_schedule(
+                data=schedule_data)
             updated_schedules = set(self.schedules)
             updated_schedules.add(schedule_id)
             self.schedules = list(updated_schedules)
@@ -166,11 +168,12 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         location = self.location
         self.location = "__internal" if self.location.startswith(
             "kubernetes") else self.location
-
+        execution_params = ExecutionParams.from_orm(self).dict(exclude_none=True)
+        execution_params.pop("cloud_settings")
         execution_json = {
             "test_id": self.test_uid,
             "container": self.container,
-            "execution_params": ExecutionParams.from_orm(self).dict(exclude_none=True),
+            "execution_params": json.dumps(execution_params),
             "cc_env_vars": CcEnvVars.from_orm(self).dict(exclude_none=True),
             "job_name": self.name,
             "job_type": self.job_type,
@@ -217,4 +220,3 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
             keep_custom_test_parameters=True,  # explicitly
             with_schedules=with_schedules
         )
-
