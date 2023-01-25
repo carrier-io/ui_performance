@@ -165,7 +165,7 @@ const TestCreateModal = {
             <div class="modal-header">
                 <div class="row w-100">
                     <div class="col">
-                        <h2>[[ mode === 'create' ? 'Create' : 'Update' ]] UI Test</h2>
+                        <p class="font-h3 font-bold">[[ mode === 'create' ? 'Create' : 'Update' ]] UI Test</p>
                     </div>
                     <div class="col-xs">
                         <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" aria-label="Close">
@@ -194,10 +194,8 @@ const TestCreateModal = {
                         <div class="col">
                             <div class="form-group">
                                 <p class="font-h5 font-semibold">Test Name</p>
-                                <p>
-                                    <h13>Enter a name that describes the purpose of your test.</h13>
-                                </p>
-                                <div class="custom-input mb-3 mt-1" 
+                                <p class="font-h6 font-weight-400">Enter a name that describes the purpose of your test.</p>
+                                <div class="custom-input mb-3 mt-2" 
                                     :class="{'invalid-input': errors?.name}">
                                     <input type="text"
                                         placeholder="Test Name"
@@ -212,10 +210,8 @@ const TestCreateModal = {
                                 <div class="flex-fill">
                                     <div class="form-group">
                                         <p class="font-h5 font-semibold">Test Type</p>
-                                        <p>
-                                            <h13>Tag to group tests by type</h13>
-                                        </p>
-                                        <div class="custom-input mb-3 mt-1"
+                                        <p class="font-h6 font-weight-400">Tag to group tests by type</p>
+                                        <div class="custom-input mb-3 mt-2"
                                             :class="{ 'invalid-input': errors?.test_type }"
                                         >
                                             <input type="text" placeholder="Test Type"
@@ -228,10 +224,8 @@ const TestCreateModal = {
                                 <div class="flex-fill">
                                     <div class="form-group">
                                         <p class="font-h5 font-semibold">Environment</p>
-                                        <p>
-                                            <h13>Tag to group tests by env</h13>
-                                        </p>
-                                        <div class="custom-input mb-3 mt-1"
+                                        <p class="font-h6 font-weight-400">Tag to group tests by env</p>
+                                        <div class="custom-input mb-3 mt-2"
                                             :class="{ 'invalid-input': errors?.env_type }"
                                         >
                                             <input type="text"
@@ -245,9 +239,7 @@ const TestCreateModal = {
                             </div>
                             <div class="form-group">
                                 <p class="font-h5 font-semibold">Test runner</p>
-                                <p>
-                                    <h13>Choose the runner for the test.</h13>
-                                </p>
+                                <p class="font-h6 font-weight-400">Choose the runner for the test.</p>
                                 <div class="custom-input w-100-imp">
                                     <select class="selectpicker bootstrap-select__b mt-1" data-style="btn" 
                                     v-model="runner"
@@ -263,10 +255,10 @@ const TestCreateModal = {
                             </div>
                             
                             <div class="row">
-                                <div class="form-group col-6">
+                                <div class="form-group col-6 d-flex flex-column justify-content-end pr-2.25">
                                     <p class="font-h5 font-semibold">Number of loops</p>
-                                    <h13>How many times to repeat scenario execution.</h13>
-                                    <div class="custom-input mb-3 mt-1"
+                                    <p class="font-h6 font-weight-400">How many times to repeat scenario execution.</p>
+                                    <div class="custom-input mt-2"
                                         :class="{ 'invalid-input': errors?.loops }"
                                     >
                                         <input type="number" class="form-control-alternative"
@@ -278,10 +270,10 @@ const TestCreateModal = {
                                     </div>
                                 </div>
                                     
-                                <div class="form-group col-6">
+                                <div class="form-group col-6 d-flex flex-column justify-content-end pl-2.25">
                                     <p class="font-h5 font-semibold">Aggregation</p>
-                                    <h13>Aggregation rule</h13>
-                                    <div class="custom-input w-100-imp select-validation"
+                                    <p class="font-h6 font-weight-400">Aggregation rule</p>
+                                    <div class="custom-input w-100-imp select-validation mt-2"
                                         :class="{ 'is-invalid': errors?.aggregation, 'invalid-select': errors?.aggregation }"
                                     >
                                         <select class="selectpicker bootstrap-select__b mt-1" data-style="btn" 
@@ -304,10 +296,8 @@ const TestCreateModal = {
                             <div class="form-group mt-3">
                                 <div class="form-group">
                                     <p class="font-h5 font-semibold">Entrypoint</p>
-                                    <p>
-                                        <h13>Script name</h13>
-                                    </p>
-                                    <input type="text" class="form-control form-control-alternative"
+                                    <p class="font-h6 font-weight-400">Script name</p>
+                                    <input type="text" class="form-control form-control-alternative mt-2"
                                            placeholder="sitespeed.js"
                                            v-model='entrypoint'
                                            :class="{ 'is-invalid': errors?.entrypoint }"
