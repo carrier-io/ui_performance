@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, validator
-from sqlalchemy import JSON, cast, Integer, String, literal_column, desc, asc, func
+from sqlalchemy import String, literal_column, asc, func, not_
 from collections import OrderedDict, defaultdict
 
 from pylon.core.tools import web, log
@@ -79,21 +79,30 @@ class RPC:
     @web.rpc('performance_analysis_test_runs_ui_performance')
     @rpc_tools.wrap_exceptions(RuntimeError)
     def test_runs(self, project_id: int,
-                               start_time, end_time=None) -> tuple:
+                  start_time: Optional[datetime] = None,
+                  end_time: Optional[datetime] = None,
+                  exclude_uids: Optional[list] = None) -> tuple:
         log.info('ui_performance rpc | %s | %s', project_id, [start_time, end_time])
 
         query = UIReport.query.with_entities(
             *columns.values()
         ).filter(
             UIReport.project_id == project_id,
-            UIReport.start_time >= start_time,
             func.lower(UIReport.test_status['status'].cast(String)).in_(('"finished"', '"failed"', '"success"'))
         ).order_by(
             asc(UIReport.start_time)
         )
 
+        if start_time:
+            query = query.filter(UIReport.start_time >= start_time)
+
         if end_time:
-            query.filter(UIReport.end_time <= end_time)
+            query = query.filter(UIReport.end_time <= end_time)
+
+        if exclude_uids:
+            query = query.filter(not_(UIReport.uid.in_(exclude_uids)))
+
+        # log.info('ui final query %s', query)
 
         return tuple(zip(columns.keys(), i) for i in query.all())
 
@@ -138,6 +147,7 @@ class RPC:
         data = dict()
         page_names = set()
         earliest_date = None
+        loop_earliest_dates = defaultdict(dict)
         # data = {
         #     8: {
         #         1: {
@@ -158,7 +168,7 @@ class RPC:
             else:
                 report_reflection = ReportBuilderReflection.from_orm(report)
 
-            log.info(report_reflection.dict())
+            # log.info('rrd, %s', report_reflection.dict())
 
             results = self.get_ui_results(
                 report_reflection.bucket_name,
@@ -180,27 +190,13 @@ class RPC:
                 current_date = datetime.fromisoformat(result_model.timestamp)
                 if earliest_date is None or earliest_date > current_date:
                     earliest_date = current_date
-
-                # continue
-                #
-                # if not data[report_reflection.id].get(r['loop']):
-                #     data[report_reflection.id][r['loop']] = defaultdict(list)
-                #
-                # for metric_name, metric_value in r.items():
-                #     if metric_name not in {'loop', 'identifier', 'file_name'}:
-                #         try:
-                #             mv = int(metric_value)
-                #         except ValueError:
-                #             mv = metric_value
-                #         data[report_reflection.id][r['loop']][metric_name].append(mv)
-                #
-                #         if metric_name == 'timestamp':
-                #             current_date = datetime.fromisoformat(mv)
-                #             if earliest_date is None or earliest_date > current_date:
-                #                 earliest_date = current_date
+                if not loop_earliest_dates[report_reflection.id].get(loop) or \
+                        loop_earliest_dates[report_reflection.id][loop] > current_date:
+                    loop_earliest_dates[report_reflection.id][loop] = current_date
 
         return {
             'datasets': data,
             'page_names': list(page_names),
-            'earliest_date': earliest_date.isoformat()
+            'earliest_date': earliest_date.isoformat(),
+            'loop_earliest_dates': loop_earliest_dates
         }

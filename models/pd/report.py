@@ -21,7 +21,7 @@ class ReportGetModel(BaseModel):
     environment: str
     browser_version: str
     resolution: Optional[str] = '1380x749'
-    duration: int
+    duration: Optional[int]
     aggregation: str
     tags: Optional[list] = []
     loops: int
