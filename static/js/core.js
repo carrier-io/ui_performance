@@ -464,10 +464,16 @@ const TestCreateModal = {
         // },
         async handleCreate(run_test = false) {
             this.clearErrors()
+            data = new FormData()
+            data.append('data', JSON.stringify({...this.get_data(), run_test}))
+            const source = this.source.get().file
+            if (typeof source === 'object'){
+                data.append('file', source)
+            }
+
             const resp = await fetch(`${api_base_url}/tests/${getSelectedProjectId()}`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({...this.get_data(), run_test})
+                body: data
             })
             if (resp.ok) {
                 this.hide()
