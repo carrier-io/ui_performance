@@ -1,5 +1,4 @@
 import json
-import logging
 from queue import Empty
 
 from sqlalchemy import and_
@@ -69,10 +68,7 @@ class API(Resource):
         """
         Create test and run on demand
         """
-        logging.info(request.form)
-        logging.info(request.form.get('data'))
         data = json.loads(request.form.get('data'))
-        logging.info(data)
         run_test_ = data.pop('run_test', False)
         engagement_id = data.get('integrations', {}).get('reporters', {})\
             .get('reporter_engagement', {}).get('id')
