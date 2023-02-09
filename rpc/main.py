@@ -1,18 +1,22 @@
-import boto3
-from typing import Optional, Union
-from pylon.core.tools import web
-from pydantic import ValidationError
+from datetime import datetime
 from json import loads
+from typing import Optional, Union
+
+import boto3
+from pydantic import ValidationError
+from pylon.core.tools import web
+from sqlalchemy import desc
+
+from tools import rpc_tools
+from ..models.pd.quality_gate import QualityGate
+from ..models.pd.report import ReportGetModel
 from ..models.pd.test_parameters import UITestParamsCreate, UITestParamsRun, UITestParams
 from ..models.pd.ui_test import TestOverrideable, TestCommon
 from ..models.ui_report import UIReport
 from ..models.ui_tests import UIPerformanceTest
-from ..models.pd.quality_gate import QualityGate
-
-from tools import rpc_tools
-from ...shared.tools.constants import MINIO_ENDPOINT, MINIO_ACCESS, MINIO_SECRET, MINIO_REGION
 from ..utils.utils import run_test
-from ..models.pd.report import ReportGetModel
+from ...shared.tools.constants import MINIO_ENDPOINT, MINIO_ACCESS, MINIO_SECRET, MINIO_REGION
+
 
 class RPC:
     @web.rpc('ui_results_or_404', 'results_or_404')
@@ -28,18 +32,15 @@ class RPC:
         except:
             totals = []
 
-
-
         pd_obj = ReportGetModel.from_orm(report)
         pd_obj.totals = totals
         return pd_obj.validate(pd_obj).dict(exclude={'totals'}, by_alias=True)
-
 
     @web.rpc('ui_performance_job_type_by_uid')
     @rpc_tools.wrap_exceptions(RuntimeError)
     def job_type_by_uid(self, project_id: int, test_uid: str) -> Optional[str]:
         test = UIPerformanceTest.query.filter(
-                UIPerformanceTest.get_api_filter(project_id, test_uid)
+            UIPerformanceTest.get_api_filter(project_id, test_uid)
         ).first()
         if test:
             return test.job_type
@@ -51,7 +52,6 @@ class RPC:
             pd_kwargs = {}
         pd_object = QualityGate(**data)
         return pd_object.dict(**pd_kwargs)
-
 
     @web.rpc('ui_performance_test_create_common_parameters', 'parse_common_test_parameters')
     def parse_common_test_parameters(self, project_id: int, test_params: dict, **kwargs) -> dict:
@@ -127,3 +127,31 @@ class RPC:
                         pass
 
         return results
+
+    @web.rpc('ui_performance_get_tests')
+    @rpc_tools.wrap_exceptions(RuntimeError)
+    def get_tests(self, project_id: int) -> list[UIPerformanceTest]:
+        """ Gets all created tests """
+        return UIPerformanceTest.query.filter_by(project_id=project_id).all()
+
+    @web.rpc('ui_performance_get_reports')
+    @rpc_tools.wrap_exceptions(RuntimeError)
+    def get_reports(
+            self, project_id: int,
+            start_time: datetime | None = None,
+            end_time: datetime | None = None
+    ) -> list[UIReport]:
+        """ Gets all UI reports filtered by time"""
+        query = UIReport.query.filter(
+            UIReport.project_id == project_id,
+        ).order_by(
+            desc(UIReport.start_time)
+        )
+
+        if start_time:
+            query = query.filter(UIReport.start_time >= start_time.isoformat())
+
+        if end_time:
+            query = query.filter(UIReport.end_time <= end_time.isoformat())
+
+        return query.all()

@@ -1,5 +1,4 @@
-{% set modal_id = 'run_modal' %}
-<Test-Run-Modal
+<Ui-Test-Run-Modal
     @register="register"
     instance_name="{{ modal_id }}"
     test_params_id="{{ modal_id }}_test_params"
@@ -10,8 +9,8 @@
             "caption": "Test Parameters",
             "modal_id": modal_id,
             'custom_formatters': {
-                'name': 'custom_params_table_formatters.input',
-                'action': 'custom_params_table_formatters.action'
+                'name': 'ui_custom_params_table_formatters.input',
+                'action': 'ui_custom_params_table_formatters.action'
             }
         }) | safe }}
     </template>
@@ -20,4 +19,4 @@
             'instance_name_prefix': '%s_' | format(modal_id)
         }) | safe }}
     </template>
-</Test-Run-Modal>
+</Ui-Test-Run-Modal>

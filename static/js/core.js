@@ -1,5 +1,5 @@
-const api_base_url = '/api/v1/ui_performance'
-var test_formatters = {
+const ui_api_base_url = '/api/v1/ui_performance'
+var ui_test_formatters = {
     runner(value, row, index) {
         switch (value) {
             case 'Sitespeed (browsertime)':
@@ -81,11 +81,11 @@ var test_formatters = {
 
         "click .test_delete": function (e, value, row, index) {
             console.log('test_delete', row)
-            test_delete(row.id)
+            ui_test_delete(row.id)
         },
 
         "click .int_docker": async function (e, value, row, index) {
-            const resp = await fetch(`${api_base_url}/test/${row.project_id}/${row.id}/?output=docker`)
+            const resp = await fetch(`${ui_api_base_url}/test/${row.project_id}/${row.id}/?output=docker`)
             if (resp.ok) {
                 const {cmd} = await resp.json()
                 vueVm.docker_command.cmd = cmd
@@ -98,7 +98,7 @@ var test_formatters = {
     }
 }
 
-var report_formatters = {
+var ui_report_formatters = {
     reportsStatusFormatter(value, row, index) {
         switch (value.status.toLowerCase()) {
             case 'error':
@@ -131,7 +131,7 @@ var report_formatters = {
     }
 }
 
-var custom_params_table_formatters = {
+var ui_custom_params_table_formatters = {
     input(value, row, index, field) {
         if (['test_name', 'test_type', 'env_type'].includes(row.name)) {
             return `
@@ -152,10 +152,10 @@ var custom_params_table_formatters = {
 }
 
 
-const TestCreateModal = {
+const UiTestCreateModal = {
     delimiters: ['[[', ']]'],
     // components: {
-        // Customization: Customization,
+    // Customization: Customization,
     // },
     props: ['modal_id', 'runners', 'test_params_id', 'source_card_id', 'locations'],
     template: `
@@ -411,7 +411,7 @@ const TestCreateModal = {
                 return acc === '' ? item.msg : [acc, item.msg].join('; ')
             }, '')
         },
-        compareObjectsDiff(o1, o2={}, required_fields) {
+        compareObjectsDiff(o1, o2 = {}, required_fields) {
             return Object.keys(o2).reduce((diff, key) => {
                 if (o1[key] !== o2[key] || required_fields.includes(key)) {
                     return {
@@ -467,25 +467,27 @@ const TestCreateModal = {
             data = new FormData()
             data.append('data', JSON.stringify({...this.get_data(), run_test}))
             const source = this.source.get().file
-            if (typeof source === 'object'){
+            if (typeof source === 'object') {
                 data.append('file', source)
             }
 
-            const resp = await fetch(`${api_base_url}/tests/${getSelectedProjectId()}`, {
+            const resp = await fetch(`${ui_api_base_url}/tests/${getSelectedProjectId()}`, {
                 method: 'POST',
                 body: data
             })
             if (resp.ok) {
                 this.hide()
                 vueVm.registered_components.table_tests?.table_action('refresh')
+                vueVm.registered_components.table_tests_overview?.table_action('refresh')
                 run_test && vueVm.registered_components.table_results?.table_action('refresh')
+                run_test && vueVm.registered_components.table_reports_overview?.table_action('refresh')
             } else {
                 await this.handleError(resp)
             }
         },
         async handleUpdate(run_test = false) {
             this.clearErrors()
-            const resp = await fetch(`${api_base_url}/test/${getSelectedProjectId()}/${this.id}`, {
+            const resp = await fetch(`${ui_api_base_url}/test/${getSelectedProjectId()}/${this.id}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({...this.get_data(), run_test})
@@ -493,7 +495,9 @@ const TestCreateModal = {
             if (resp.ok) {
                 this.hide()
                 vueVm.registered_components.table_tests?.table_action('refresh')
+                vueVm.registered_components.table_tests_overview?.table_action('refresh')
                 run_test && vueVm.registered_components.table_results?.table_action('refresh')
+                run_test && vueVm.registered_components.table_reports_overview?.table_action('refresh')
             } else {
                 await this.handleError(resp)
             }
@@ -600,10 +604,10 @@ const TestCreateModal = {
         },
     }
 }
-register_component('TestCreateModal', TestCreateModal)
+register_component('UiTestCreateModal', UiTestCreateModal)
 
 
-const TestRunModal = {
+const UiTestRunModal = {
     delimiters: ['[[', ']]'],
     props: ['test_params_id', 'instance_name_prefix'],
     template: `
@@ -739,7 +743,7 @@ const TestRunModal = {
         },
         async handleRun() {
             this.clearErrors()
-            const resp = await fetch(`${api_base_url}/test/${getSelectedProjectId()}/${this.id}`, {
+            const resp = await fetch(`${ui_api_base_url}/test/${getSelectedProjectId()}/${this.id}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(this.get_data())
@@ -748,6 +752,7 @@ const TestRunModal = {
                 this.hide()
                 // vueVm.registered_components.table_tests?.table_action('refresh')
                 vueVm.registered_components.table_results?.table_action('refresh')
+                vueVm.registered_components.table_reports_overview?.table_action('refresh')
             } else {
                 await this.handleError(resp)
             }
@@ -787,17 +792,22 @@ const TestRunModal = {
         }
     },
 }
-register_component('TestRunModal', TestRunModal)
+register_component('UiTestRunModal', UiTestRunModal)
 
-const test_delete = ids => {
-    const url = `${api_base_url}/tests/${getSelectedProjectId()}?` + $.param({"id[]": ids})
+const ui_test_delete = ids => {
+    const url = `${ui_api_base_url}/tests/${getSelectedProjectId()}?` + $.param({"id[]": ids})
     fetch(url, {
         method: 'DELETE'
-    }).then(response => response.ok && vueVm.registered_components.table_tests?.table_action('refresh'))
+    }).then(response => {
+        if (response.ok) {
+            vueVm.registered_components.table_tests?.table_action('refresh')
+            vueVm.registered_components.table_tests_overview?.table_action('refresh')
+        }
+    })
 }
 
-const results_delete = ids => {
-    const url = `${api_base_url}/reports/${getSelectedProjectId()}?` + $.param({"id[]": ids})
+const ui_results_delete = ids => {
+    const url = `${ui_api_base_url}/reports/${getSelectedProjectId()}?` + $.param({"id[]": ids})
     fetch(url, {
         method: 'DELETE'
     }).then(response => response.ok && vueVm.registered_components.table_results?.table_action('refresh'))
@@ -808,12 +818,12 @@ $(document).on('vue_init', () => {
         const ids_to_delete = vueVm.registered_components.table_tests?.table_action('getSelections').map(
             item => item.id
         ).join(',')
-        ids_to_delete && test_delete(ids_to_delete)
+        ids_to_delete && ui_test_delete(ids_to_delete)
     })
     $('#delete_results').on('click', e => {
         const ids_to_delete = vueVm.registered_components.table_results?.table_action('getSelections').map(
             item => item.id
         ).join(',')
-        ids_to_delete && results_delete(ids_to_delete)
+        ids_to_delete && ui_results_delete(ids_to_delete)
     })
 })
