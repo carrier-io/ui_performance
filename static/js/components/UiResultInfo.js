@@ -40,7 +40,7 @@ const UiResultInfo = {
             <div class="card-header">
                 <div class="row">
                     <div class="col-4">
-                        <h3><a id="back-button" href="/-/performance/ui">
+                        <h3><a id="back-button" @click="() => window.history.back()">
                             <i class="icon__16x16 icon-arrow-left-bold__16"></i>
                         </a> {{ test_data["name"] }} (back)</h3>
                     </div>

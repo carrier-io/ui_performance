@@ -1,6 +1,5 @@
-{% set source_container_id = "source_card" %}
 
-<Test-Create-Modal
+<Ui-Test-Create-Modal
         @register="register"
         instance_name="{{ modal_id }}"
 
@@ -35,5 +34,5 @@
     <template #schedules>
         {{ template_slot('ui_performance_scheduling_test_create_content') | safe }}
     </template>
-</Test-Create-Modal>
+</Ui-Test-Create-Modal>
 
