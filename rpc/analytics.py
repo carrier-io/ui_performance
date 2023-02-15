@@ -1,14 +1,12 @@
+from collections import OrderedDict, defaultdict
 from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, validator
-from sqlalchemy import String, literal_column, asc, func, not_
-from collections import OrderedDict, defaultdict
-
 from pylon.core.tools import web, log
+from sqlalchemy import String, literal_column, asc, func, not_
 
 from tools import rpc_tools
-
 from ..models.ui_baseline import UIBaseline
 from ..models.ui_report import UIReport
 from ..utils.utils import get_bucket_name, get_report_file_name
@@ -36,6 +34,7 @@ class ReportBuilderReflection(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ReportResultsModel(BaseModel):
     timestamp: str
     type: str
@@ -49,6 +48,7 @@ class ReportResultsModel(BaseModel):
     fvc: int
     lvc: int
 
+
 columns = OrderedDict((
     ('id', UIReport.id),
     ('uid', UIReport.uid),
@@ -56,6 +56,7 @@ columns = OrderedDict((
     ('name', UIReport.name),
     ('start_time', UIReport.start_time),
     ('test_type', UIReport.test_type),
+    ('test_uid', UIReport.test_uid),
     ('test_env', UIReport.environment),
     ('status', UIReport.test_status['status']),
     ('duration', UIReport.duration),
@@ -79,16 +80,18 @@ class RPC:
     @web.rpc('performance_analysis_test_runs_ui_performance')
     @rpc_tools.wrap_exceptions(RuntimeError)
     def test_runs(self, project_id: int,
-                  start_time: Optional[datetime] = None,
-                  end_time: Optional[datetime] = None,
-                  exclude_uids: Optional[list] = None) -> tuple:
+            start_time: Optional[datetime] = None,
+            end_time: Optional[datetime] = None,
+            exclude_uids: Optional[list] = None
+    ) -> tuple:
         log.info('ui_performance rpc | %s | %s', project_id, [start_time, end_time])
 
         query = UIReport.query.with_entities(
             *columns.values()
         ).filter(
             UIReport.project_id == project_id,
-            func.lower(UIReport.test_status['status'].cast(String)).in_(('"finished"', '"failed"', '"success"'))
+            func.lower(UIReport.test_status['status'].cast(String)).in_(
+                ('"finished"', '"failed"', '"success"'))
         ).order_by(
             asc(UIReport.start_time)
         )

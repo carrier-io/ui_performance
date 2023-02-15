@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 import boto3
 from pydantic import ValidationError
-from pylon.core.tools import web
+from pylon.core.tools import web, log
 from sqlalchemy import desc
 
 from tools import rpc_tools
@@ -139,9 +139,21 @@ class RPC:
     def get_reports(
             self, project_id: int,
             start_time: datetime | None = None,
-            end_time: datetime | None = None
+            end_time: datetime | None = None,
+            unique: bool = False
     ) -> list[UIReport]:
         """ Gets all UI reports filtered by time"""
+
+        def _get_unique_reports(objects: list[UIReport]) -> list[UIReport]:
+            unique_combinations = {}
+            for obj in objects:
+                combination = (obj.test_uid, obj.environment, obj.test_type)
+                stored_obj = unique_combinations.get(combination)
+                if stored_obj is None or obj.start_time > stored_obj.start_time:
+                    unique_combinations[combination] = obj
+
+            return list(unique_combinations.values())
+
         query = UIReport.query.filter(
             UIReport.project_id == project_id,
         ).order_by(
@@ -154,4 +166,8 @@ class RPC:
         if end_time:
             query = query.filter(UIReport.end_time <= end_time.isoformat())
 
-        return query.all()
+        reports = query.all()
+        if unique:
+            reports = _get_unique_reports(reports)
+
+        return reports
