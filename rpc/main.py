@@ -53,6 +53,14 @@ class RPC:
         pd_object = QualityGate(**data)
         return pd_object.dict(**pd_kwargs)
 
+    @web.rpc('ui_performance_execution_json_config_quality_gate')
+    @rpc_tools.wrap_exceptions(RuntimeError)
+    def make_execution_json_config(self, integration_data: dict) -> dict:
+        """ Prepare execution_json for this integration """
+        # no extra data to add to execution json
+        # but rpc needs to exist
+        return integration_data
+
     @web.rpc('ui_performance_test_create_common_parameters', 'parse_common_test_parameters')
     def parse_common_test_parameters(self, project_id: int, test_params: dict, **kwargs) -> dict:
         overrideable_only = kwargs.pop('overrideable_only', False)

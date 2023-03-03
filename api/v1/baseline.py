@@ -13,16 +13,12 @@ class API(Resource):
         self.module = module
 
     def get(self, project_id: int):
+        args = request.args
         project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
-        baseline = UIBaseline.query.filter(
-            UIBaseline.project_id == project.id,
-            UIBaseline.test == request.args.get("test_name"),
-            UIBaseline.environment == request.args.get("env")
-        ).first()
-        try:
-            return {"baseline": baseline.summary, "report_id": baseline.report_id}, 200
-        except AttributeError:
-            return 'Baseline not found', 404
+        baseline = UIBaseline.query.filter_by(project_id=project.id, test=args.get("test_name"),
+                                              environment=args.get("env")).first()
+        report_id = baseline.report_uid if baseline else ""
+        return {"baseline_id": report_id}
 
 
     def post(self, project_id: int):
