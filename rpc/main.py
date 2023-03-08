@@ -26,15 +26,30 @@ class RPC:
             report = UIReport.query.get_or_404(run_id)
         bucket = report.name.replace("_", "").lower()
         file_name = f"{report.uid}.csv.gz"
+        avg_page_load = 0
+        thresholds_missed = 0
         try:
             results = self.get_ui_results(bucket, file_name, report.project_id)
             totals = list(map(lambda x: int(x["load_time"]), results))
+            try:
+                avg_page_load = round(sum(totals) / len(totals) / 1000, 2)
+            except ZeroDivisionError:
+                avg_page_load = 0
+
+            try:
+                thresholds_missed = round(report.thresholds_failed / report.thresholds_total * 100, 2)
+            except ZeroDivisionError:
+                thresholds_missed = 0
         except:
             totals = []
 
         pd_obj = ReportGetModel.from_orm(report)
         pd_obj.totals = totals
-        return pd_obj.validate(pd_obj).dict(exclude={'totals'}, by_alias=True)
+        data = pd_obj.validate(pd_obj).dict(exclude={'totals'}, by_alias=True)
+        data["avg_page_load"] = avg_page_load
+        data["thresholds_missed"] = thresholds_missed
+        data["total_pages"] = len(totals)
+        return data
 
     @web.rpc('ui_performance_job_type_by_uid')
     @rpc_tools.wrap_exceptions(RuntimeError)

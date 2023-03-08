@@ -138,7 +138,7 @@ const UiResultInfo = {
                                     <table>
                                         <tr>
                                             <td class="text-gray-500 font-h6 font-semibold">Environment</td>
-                                            <td class="font-h5">{{ test_data["env_type"] }}</td>
+                                            <td class="font-h5">{{ test_data["environment"] }}</td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-500 font-h6 font-semibold">Test type</td>
