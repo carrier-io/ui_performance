@@ -1,8 +1,7 @@
 from flask_restful import Resource
 from pylon.core.tools import log
-from flask import request
-from json import loads
 from ...models.ui_report import UIReport
+from tools import api_tools
 
 
 class API(Resource):
@@ -21,7 +20,7 @@ class API(Resource):
 
         response = []
         for res in results:
-            res["report"] = f"/api/v1/artifacts/artifact/{project_id}/reports/{res['file_name']}",
+            res["report"] = f"{api_tools.build_api_url('artifacts', 'artifact', mode='default')}/{project_id}/reports/{res['file_name']}",
             response.append(res)
         return response
 

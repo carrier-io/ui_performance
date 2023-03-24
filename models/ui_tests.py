@@ -18,7 +18,7 @@ from typing import List, Union, Optional
 from pylon.core.tools import log
 from sqlalchemy import Column, Integer, String, JSON, ARRAY, and_
 
-from tools import db_tools, db, rpc_tools, constants as c, secrets_tools
+from tools import db_tools, db, rpc_tools, constants as c, VaultClient
 
 from .pd.execution_json import ExecutionParams, CcEnvVars
 from .pd.test_parameters import UITestParams
@@ -79,11 +79,11 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
                        '-e token={token} ' \
                        'getcarrier/control_tower:{control_tower_version} ' \
                        '--test_id={test_id}'
+        vault_client = VaultClient.from_project(self.project_id)
         return cmd_template.format(
             project_id=self.project_id,
-            galloper_url=secrets_tools.unsecret("{{secret.galloper_url}}",
-                                                project_id=self.project_id),
-            token=secrets_tools.unsecret("{{secret.auth_token}}", project_id=self.project_id),
+            galloper_url=vault_client.unsecret("{{secret.galloper_url}}"),
+            token=vault_client.unsecret("{{secret.auth_token}}"),
             control_tower_version=c.CURRENT_RELEASE,
             test_id=self.test_uid
         )
@@ -186,7 +186,8 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
         self.location = location
 
         if execution:
-            execution_json = secrets_tools.unsecret(execution_json, project_id=self.project_id)
+            vault_client = VaultClient.from_project(self.project_id)
+            execution_json = vault_client.unsecret(execution_json)
         return execution_json
 
     def to_json(self, exclude_fields: tuple = (), keep_custom_test_parameters: bool = True, with_schedules: bool = False) -> dict:

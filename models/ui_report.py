@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from ..utils.utils import get_bucket_name, get_report_file_name
 from sqlalchemy import String, Column, Integer, Boolean, JSON, ARRAY, DateTime
-from tools import db_tools, db, rpc_tools, constants as c, secrets_tools
+from tools import db_tools, db, rpc_tools, constants as c
 
 
 class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):

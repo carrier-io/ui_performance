@@ -80,11 +80,10 @@ class RPC:
     @web.rpc('performance_analysis_test_runs_ui_performance')
     @rpc_tools.wrap_exceptions(RuntimeError)
     def test_runs(self, project_id: int,
-            start_time: Optional[datetime] = None,
-            end_time: Optional[datetime] = None,
-            exclude_uids: Optional[list] = None
-    ) -> tuple:
-        log.info('ui_performance rpc | %s | %s', project_id, [start_time, end_time])
+                  start_time: Optional[datetime] = None,
+                  end_time: Optional[datetime] = None,
+                  exclude_uids: Optional[list] = None) -> tuple:
+        # log.info('ui_performance rpc | %s | %s', project_id, [start_time, end_time])
 
         query = UIReport.query.with_entities(
             *columns.values()
