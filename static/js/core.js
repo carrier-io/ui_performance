@@ -310,7 +310,7 @@ const UiTestCreateModal = {
                 </div>
                 
                 
-                <Locations 
+                <UILocations 
                     v-model:location="location"
                     v-model:parallel_runners="parallel_runners"
                     v-model:cpu="cpu_quota"
@@ -321,7 +321,7 @@ const UiTestCreateModal = {
                     
                     v-bind="locations"
                     ref="locations"
-                ></Locations>
+                ></UILocations>
                 
                 <slot name='params_table'></slot>
                 <slot name='integrations'></slot>
@@ -443,7 +443,8 @@ const UiTestCreateModal = {
                             ["id", "integration_name", "instance_type"]
                         )
                     },
-                    parallel_runners: this.parallel_runners,
+                    // parallel_runners: this.parallel_runners,
+                    parallel_runners: 1,
                     cc_env_vars: {},
                     location: this.location
                     // customization: this.customization,
@@ -633,7 +634,42 @@ const UiTestRunModal = {
                     </div>
                     <div class="modal-body">
                         <slot name="test_parameters"></slot>
-                        <Locations 
+        
+                        <div class="row">
+                            <div class="form-group col-6 d-flex flex-column justify-content-end pr-2.25">
+                                <p class="font-h5 font-semibold">Number of loops</p>
+                                <p class="font-h6 font-weight-400">How many times to repeat scenario execution.</p>
+                                <div class="custom-input mt-2"
+                                    :class="{ 'invalid-input': errors?.loops }"
+                                >
+                                    <input type="number" class="form-control-alternative"
+                                        placeholder="# of loops" 
+                                        v-model="loops"
+                                        :class="{ 'is-invalid': errors?.loops }"
+                                    >
+                                    <div class="invalid-feedback">[[ get_error_msg('loops') ]]</div>
+                                </div>
+                            </div>
+                                
+                            <div class="form-group col-6 d-flex flex-column justify-content-end pl-2.25">
+                                <p class="font-h5 font-semibold">Aggregation</p>
+                                <p class="font-h6 font-weight-400">Aggregation rule</p>
+                                <div class="custom-input w-100-imp select-validation mt-2"
+                                    :class="{ 'is-invalid': errors?.aggregation, 'invalid-select': errors?.aggregation }"
+                                >
+                                    <select class="selectpicker bootstrap-select__b mt-1" data-style="btn" 
+                                        v-model="aggregation"
+                                    >
+                                        <option value="max">Max</option>
+                                        <option value="min">Min</option>
+                                        <option value="avg">Avg</option>
+                                    </select>
+                                </div>
+                                <div class="invalid-feedback select_error-msg">[[ get_error_msg('aggregation') ]]</div>
+                            </div>
+                        </div>
+
+                        <UILocations 
                             v-model:location="location"
                             v-model:parallel_runners="parallel_runners"
                             v-model:cpu="cpu_quota"
@@ -641,7 +677,7 @@ const UiTestRunModal = {
                             v-model:cloud_settings="cloud_settings"
                                   
                             ref="locations"
-                        ></Locations>
+                        ></UILocations>
                         <slot name="integrations"></slot>
                     </div>
                 </div>
@@ -674,6 +710,9 @@ const UiTestRunModal = {
                 id: null,
                 test_uid: null,
 
+                loops: 1,
+                aggregation: 'max',
+
                 location: 'default',
                 parallel_runners: 1,
                 cpu_quota: 1,
@@ -686,6 +725,11 @@ const UiTestRunModal = {
 
                 errors: {},
             }
+        },
+        get_error_msg(field_name) {
+            return this.errors[field_name]?.reduce((acc, item) => {
+                return acc === '' ? item.msg : [acc, item.msg].join('; ')
+            }, '')
         },
         set(data) {
             console.log('set data called', data)
@@ -739,6 +783,8 @@ const UiTestRunModal = {
                 },
                 test_parameters: test_params,
                 integrations: integrations,
+                loops: this.loops,
+                aggregation: this.aggregation
             }
         },
         async handleRun() {
