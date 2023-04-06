@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from pylon.core.tools import log
 
-from tools import task_tools, rpc_tools
+from tools import TaskManager, rpc_tools
 
 
 def test_parameter_value_by_name(test_parameters: List[dict], param_name: str) -> Optional[str]:
@@ -41,7 +41,7 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
     report.insert()
     event["cc_env_vars"]["REPORT_ID"] = str(report.uid)
 
-    resp = task_tools.run_task(test.project_id, [event])
+    resp = TaskManager(test.project_id).run_task([event])
     # resp['redirect'] = f'/task/{resp["task_id"]}/results'  # todo: where this should lead to?
 
     test.rpc.call.increment_statistics(test.project_id, 'ui_performance_test_runs')
