@@ -1,0 +1,9 @@
+<ui-result
+        @register="register"
+        instance_name="ui-result"
+        :test_data='{{ test_data | tojson }}'
+        url="/api/v1/ui_performance/results/{{ tools.session_project.get() }}/{{ test_data['uid'] }}">
+</ui-result>
+{% with test_config = test_data['test_config'] %}
+{% include 'ui_performance:results/config_modal.html' %}
+{% endwith %}

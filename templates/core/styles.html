@@ -1,0 +1,4 @@
+{{ template_slot('params_table_styles') | safe }}
+{{ template_slot('locations_styles') | safe }}
+{{ template_slot('integrations_ui_performance_styles') | safe }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('ui_performance.static', filename='css/core.css') }}" />

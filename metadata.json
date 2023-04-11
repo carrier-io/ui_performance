@@ -1,5 +1,6 @@
 {
   "name": "Carrier UI Tests RestAPI Plugin",
   "version": "0.1",
-  "depends_on": ["shared", "projects", "tasks", "theme"]
+  "depends_on": ["shared", "projects", "tasks", "theme"],
+  "init_after": ["integrations"]
 }

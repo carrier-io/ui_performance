@@ -1,0 +1,127 @@
+{% set modal_id = 'create_modal' %}
+<div class="p-3">
+    <div class="flex-container">
+        <div class="flex-item-2">
+            <Table-Card
+                    @register="register"
+                    instance_name="table_tests"
+
+                    header='UI tests'
+                    :table_attributes="{
+                        'data-url': '/api/v1/ui_performance/tests/{{ tools.session_project.get() }}',
+                        'data-page-size': 5,
+                    }"
+                    container_classes="h-100"
+            >
+                <template #actions="{master}">
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-basic btn-icon mr-2"
+                                data-toggle="modal"
+                                data-target="#{{ modal_id }}">
+                            <i class="icon__18x18 icon-create-element icon__white"></i>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple" id="delete_tests"><i
+                                class="icon__18x18 icon-delete"></i>
+                        </button>
+                    </div>
+                </template>
+                <template #table_headers>
+                    <th scope="col" data-checkbox="true"></th>
+                    <th data-visible="false" data-field="id">index</th>
+                    <th scope="col" data-sortable="true"
+                        data-cell-style="ui_test_formatters.name_style"
+                        data-field="name"
+                    >
+                        Name
+                    </th>
+                    <th scope="col" data-sortable="true"
+                        data-cell-style="ui_test_formatters.name_style"
+                        data-field="test_uid"
+                    >
+                        UUID
+                    </th>
+                    <th scope="col" data-sortable="true"
+                        data-cell-style="ui_test_formatters.name_style"
+                        data-field="entrypoint"
+                    >
+                        Entrypoint
+                    </th>
+                    <th scope="col" data-align="center" data-sortable="true"
+                        data-formatter=ui_test_formatters.runner
+                        data-field="runner"
+                    >
+                        Tool
+                    </th>
+                    <th scope="col" data-align="right"
+                        {#                        data-cell-style="ui_test_formatters.cell_style"#}
+                        data-width="165" data-width-unit="px"
+                        data-formatter=ui_test_formatters.actions
+                        data-events="ui_test_formatters.action_events"
+                    >
+                        Actions
+                    </th>
+                </template>
+            </Table-Card>
+        </div>
+        <div class="flex-item-2">
+            {% include 'ui_performance:core/thresholds.html' %}
+        </div>
+    </div>
+
+    <Table-Card
+            @register="register"
+            instance_name="table_results"
+
+            header='Results'
+            :adaptive-height="true"
+            :table_attributes="{
+                'data-url': '/api/v1/ui_performance/reports/{{ tools.session_project.get() }}',
+            }"
+            container_classes="mt-3"
+    >
+        <template #actions="{master}">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary btn-icon btn-icon__purple" id="delete_results">
+                    <i class="icon__18x18 icon-delete"></i>
+                </button>
+            </div>
+        </template>
+        <template #table_headers>
+            <th scope="col" data-checkbox="true"></th>
+            <th data-visible="false" data-field="id">index</th>
+            <th scope="col" data-sortable="true" data-field="name"
+                data-formatter=ui_report_formatters.createLinkToTest
+            >
+                Name
+            </th>
+            <th scope="col" data-sortable="true" data-field="start_time"
+                data-formatter="ui_report_formatters.date_formatter"
+            >Date
+            </th>
+            <th scope="col" data-sortable="true" data-field="duration">Duration</th>
+            <th scope="col" data-sortable="true" data-field="test_type">Test Type</th>
+            <th scope="col" data-sortable="true" data-field="environment">Env</th>
+            <th scope="col" data-sortable="true" data-field="browser">Browser</th>
+            <th scope="col" data-sortable="true" data-field="browser_version">Version</th>
+            <th scope="col" data-sortable="true" data-field="test_status"
+                data-formatter="ui_report_formatters.reportsStatusFormatter"
+            >
+                Status
+            </th>
+        </template>
+    </Table-Card>
+
+    {% with modal_id=modal_id, runners=runners, source_container_id = "source_card_id" %}
+        {% include 'ui_performance:core/create.html' %}
+    {% endwith %}
+    {% with modal_id='run_modal', runners=runners %}
+        {% include 'ui_performance:core/runtest.html' %}
+    {% endwith %}
+    <Docker-Command-Modal
+            @register="register"
+            instance_name="docker_command"
+            modal_id="docker_command_modal"
+    >
+    </Docker-Command-Modal>
+</div>
+

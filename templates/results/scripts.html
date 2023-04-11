@@ -1,0 +1,34 @@
+<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+<script src="{{ url_for('design-system.static', filename='assets/vendor/nouislider/nouislider.js') }}"></script>
+<script src="{{ url_for('design-system.static', filename='assets/vendor/nouislider/wNumb.min.js') }}"></script>
+<script src="{{ url_for('design-system.static', filename='assets/vendor/chart.js/chart.min.js') }}"></script>
+<script src="{{ url_for('design-system.static', filename='assets/vendor/chart.js/chartjs-adapter-date-fns.bundle.min.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/results.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/chartConfig.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/htmlPlugin.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/in_progress.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/components/UiResultInfo.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/components/UiResultLineChart.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/components/UiResultBarChart.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/components/UiResultCharts.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/components/UiResultTable.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='js/components/UiResult.js') }}"></script>
+<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+<script src="{{ url_for('ui_performance.static', filename='vendor/cytoscape/cytoscape-ctxmenu.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='vendor/cytoscape/cytoscape-euler.js') }}"></script>
+<script src="{{ url_for('ui_performance.static', filename='vendor/cytoscape/cytorender.js') }}"></script>
+
+{{ template_slot('params_table_scripts') | safe }}
+{{ template_slot('sources_scripts') | safe }}
+{{ template_slot('locations_scripts') | safe }}
+{{ template_slot('integrations_backend_performance_scripts') | safe }}
+{#<script src="{{ url_for('ui_performance.static', filename='js/quality_gate.js') }}"></script>#}
+<script>
+    $(document).on('vue_init', () => {
+        const nav_links = $('#source_card_config a')
+        nav_links.removeClass('disabled')
+        SourceCard.Manager('source_card_config').set({{ source_data | default({}) | tojson }})
+        nav_links.addClass('disabled')
+        IntegrationSection.Manager().set({{ integrations_data | default({}) | tojson }})
+    })
+</script>
