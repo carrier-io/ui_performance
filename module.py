@@ -48,6 +48,13 @@ class Module(module.ModuleModel):
                 "Performance",
                 kind="holder",
                 location="left",
+                permissions={
+                    "permissions": ["performance"],
+                    "recommended_roles": {
+                        "administration": {"admin": True, "editor": True, "viewer": False},
+                        "default": {"admin": True, "editor": True, "viewer": False},
+                    }
+                }
             )
         except:
             ...
@@ -59,6 +66,13 @@ class Module(module.ModuleModel):
             kind="slot",
             prefix="ui_performance_",
             weight=5,
+            permissions={
+                "permissions": ["performance.ui_performance"],
+                "recommended_roles": {
+                    "administration": {"admin": True, "editor": True, "viewer": False},
+                    "default": {"admin": True, "editor": True, "viewer": False},
+                }
+            }
         )
 
         theme.register_page(
@@ -67,13 +81,21 @@ class Module(module.ModuleModel):
             title="UI Test Results",
             kind="slot",
             prefix="ui_results_",
+            permissions={
+                "permissions": ["performance.ui_performance.reports"],
+                "recommended_roles": {
+                    "administration": {"admin": True, "editor": True, "viewer": False},
+                    "default": {"admin": True, "editor": True, "viewer": False},
+                }
+            }
         )
-        
+
         self.context.rpc_manager.call.integrations_register_section(
             name='Processing',
             integration_description='Manage processing',
             test_planner_description='Specify processing tools. You may also set processors in <a '
-                                     'href="{}">Integrations</a> '.format('/-/configuration/integrations/')
+                                     'href="{}">Integrations</a> '.format(
+                '/-/configuration/integrations/')
         )
 
         self.context.rpc_manager.call.integrations_register(

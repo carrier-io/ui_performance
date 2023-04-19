@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from pylon.core.tools import log
 from ...models.ui_report import UIReport
-from tools import api_tools
+from tools import api_tools, auth
 
 
 class API(Resource):
@@ -12,15 +12,23 @@ class API(Resource):
     def __init__(self, module):
         self.module = module
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.results.view"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": True},
+        }
+    })
     def get(self, project_id: int, report_id: str):
-        report = UIReport.query.filter_by(project_id=project_id, uid=report_id).first().to_json()
+        report = UIReport.query.filter_by(project_id=project_id,
+                                          uid=report_id).first().to_json()
         bucket = report["name"].replace("_", "").lower()
         file_name = f"{report_id}.csv.gz"
         results = self.module.get_ui_results(bucket, file_name, project_id)
 
         response = []
         for res in results:
-            res["report"] = f"{api_tools.build_api_url('artifacts', 'artifact', mode='default')}/{project_id}/reports/{res['file_name']}",
+            res[
+                "report"] = f"{api_tools.build_api_url('artifacts', 'artifact', mode='default')}/{project_id}/reports/{res['file_name']}",
             response.append(res)
         return response
 

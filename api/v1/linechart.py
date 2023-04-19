@@ -2,6 +2,7 @@ from flask_restful import Resource
 from datetime import datetime
 from pylon.core.tools import log
 from sqlalchemy import and_
+from tools import auth
 from ...models.ui_report import UIReport
 
 
@@ -14,9 +15,17 @@ class API(Resource):
     def __init__(self, module):
         self.module = module
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.reports.view"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": True},
+        }
+    })
     def get(self, project_id: int, report_id):
-        project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
-        report = UIReport.query.filter(and_(UIReport.project_id == project.id, UIReport.id == report_id)).first()
+        project = self.module.context.rpc_manager.call.project_get_or_404(
+            project_id=project_id)
+        report = UIReport.query.filter(
+            and_(UIReport.project_id == project.id, UIReport.id == report_id)).first()
         bucket = report.name.replace("_", "").lower()
         file_name = f"{report.uid}.csv.gz"
         results = self.module.get_ui_results(bucket, file_name, project_id)
@@ -45,8 +54,10 @@ class API(Resource):
             for each in results:
                 if each["name"] == page["name"]:
                     page["labels"].append(
-                        datetime.strptime(each["timestamp"].replace("+00:00", ""), "%Y-%m-%dT%H:%M:%S").strftime("%Y-%m-%d %H:%M:%S"))
-                    for metric in ["load_time", "dom", "tti", "fcp", "lcp", "cls", "tbt", "fvc", "lvc"]:
+                        datetime.strptime(each["timestamp"].replace("+00:00", ""),
+                                          "%Y-%m-%dT%H:%M:%S").strftime("%Y-%m-%d %H:%M:%S"))
+                    for metric in ["load_time", "dom", "tti", "fcp", "lcp", "cls", "tbt",
+                                   "fvc", "lvc"]:
                         page["datasets"][metric].append(each[metric])
 
         return data, 200

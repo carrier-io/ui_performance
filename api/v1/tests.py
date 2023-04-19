@@ -6,17 +6,15 @@ from sqlalchemy import and_
 from flask_restful import Resource
 from flask import request
 
-from tools import api_tools
+from tools import api_tools, auth
 
 from ...models.pd.test_parameters import UITestParam
 from ...models.ui_tests import UIPerformanceTest
-
 
 from ...utils.utils import parse_test_data, run_test
 
 
 class API(Resource):
-
     url_params = [
         '<int:project_id>',
     ]
@@ -24,6 +22,12 @@ class API(Resource):
     def __init__(self, module):
         self.module = module
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.tests.view"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": True},
+        }
+    })
     def get(self, project_id: int):
         total, res = api_tools.get(project_id, request.args, UIPerformanceTest)
         rows = [i.api_json(with_schedules=True) for i in res]
@@ -38,8 +42,15 @@ class API(Resource):
             r.update(set(*i))
         return r
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.tests.delete"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": False, "viewer": False},
+        }
+    })
     def delete(self, project_id: int):
-        project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
+        project = self.module.context.rpc_manager.call.project_get_or_404(
+            project_id=project_id)
         try:
             delete_ids = list(map(int, request.args["id[]"].split(',')))
         except TypeError:
@@ -64,15 +75,20 @@ class API(Resource):
 
         return {'ids': delete_ids}, 200
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.tests.create"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": False},
+        }
+    })
     def post(self, project_id: int):
         """
         Create test and run on demand
         """
         data = json.loads(request.form.get('data'))
         run_test_ = data.pop('run_test', False)
-        engagement_id = data.get('integrations', {}).get('reporters', {})\
+        engagement_id = data.get('integrations', {}).get('reporters', {}) \
             .get('reporter_engagement', {}).get('id')
-
 
         test_data, errors = parse_test_data(
             project_id=project_id,
@@ -104,7 +120,8 @@ class API(Resource):
 
         if test_data['source']['name'] == 'artifact':
             file = request.files.get('file')
-            project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
+            project = self.module.context.rpc_manager.call.project_get_or_404(
+                project_id=project_id)
             api_tools.upload_file('tests', file, project, create_if_not_exists=True)
         test = UIPerformanceTest(**test_data)
         test.insert()
