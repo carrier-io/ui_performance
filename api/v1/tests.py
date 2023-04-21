@@ -26,6 +26,7 @@ class API(Resource):
         "permissions": ["performance.ui_performance.tests.view"],
         "recommended_roles": {
             "default": {"admin": True, "editor": True, "viewer": True},
+            "administration": {"admin": True, "editor": True, "viewer": True},
         }
     })
     def get(self, project_id: int):
@@ -46,6 +47,7 @@ class API(Resource):
         "permissions": ["performance.ui_performance.tests.delete"],
         "recommended_roles": {
             "default": {"admin": True, "editor": False, "viewer": False},
+            "administration": {"admin": True, "editor": False, "viewer": False},
         }
     })
     def delete(self, project_id: int):
@@ -79,6 +81,7 @@ class API(Resource):
         "permissions": ["performance.ui_performance.tests.create"],
         "recommended_roles": {
             "default": {"admin": True, "editor": True, "viewer": False},
+            "administration": {"admin": True, "editor": True, "viewer": False},
         }
     })
     def post(self, project_id: int):

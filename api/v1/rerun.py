@@ -17,6 +17,7 @@ class API(Resource):
         "permissions": ["performance.ui_performance.tests.edit"],
         "recommended_roles": {
             "default": {"admin": True, "editor": True, "viewer": False},
+            "administration": {"admin": True, "editor": True, "viewer": False},
         }
     })
     def post(self, result_id: int):

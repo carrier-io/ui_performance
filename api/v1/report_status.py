@@ -17,6 +17,7 @@ class API(Resource):
         "permissions": ["performance.ui_performance.reports.view"],
         "recommended_roles": {
             "default": {"admin": True, "editor": True, "viewer": True},
+            "administration": {"admin": True, "editor": True, "viewer": True},
         }
     })
     def get(self, project_id: int, report_id: str):
@@ -30,6 +31,7 @@ class API(Resource):
         "permissions": ["performance.ui_performance.reports.edit"],
         "recommended_roles": {
             "default": {"admin": True, "editor": True, "viewer": False},
+            "administration": {"admin": True, "editor": True, "viewer": False},
         }
     })
     def put(self, project_id: int, report_id: str):
