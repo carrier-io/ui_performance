@@ -4,7 +4,7 @@ from typing import Union
 from flask import request
 from flask_restful import Resource
 from pylon.core.tools import log
-
+from tools import auth
 from ...models.pd.test_parameters import UITestParams, UITestParam
 from ...models.ui_tests import UIPerformanceTest
 from ...utils.utils import run_test, parse_test_data
@@ -19,8 +19,16 @@ class API(Resource):
     def __init__(self, module):
         self.module = module
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.tests.view"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": True},
+            "administration": {"admin": True, "editor": True, "viewer": True},
+        }
+    })
     def get(self, project_id: int, test_id: Union[int, str]):
-        project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
+        project = self.module.context.rpc_manager.call.project_get_or_404(
+            project_id=project_id)
         test = UIPerformanceTest.query.filter(
             UIPerformanceTest.get_api_filter(project.id, test_id)
         ).first()
@@ -34,9 +42,16 @@ class API(Resource):
 
         return test.api_json(with_schedules=True)
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.tests.edit"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": False},
+        }
+    })
     def put(self, project_id: int, test_id: Union[int, str]):
         """ Update test data and run on demand """
-        project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
+        project = self.module.context.rpc_manager.call.project_get_or_404(
+            project_id=project_id)
         run_test_ = request.json.pop('run_test', False)
         test_data, errors = parse_test_data(
             project_id=project_id,
@@ -63,7 +78,8 @@ class API(Resource):
             ).dict()
         )
 
-        test_query = UIPerformanceTest.query.filter(UIPerformanceTest.get_api_filter(project_id, test_id))
+        test_query = UIPerformanceTest.query.filter(
+            UIPerformanceTest.get_api_filter(project_id, test_id))
 
         schedules = test_data.pop('schedules', [])
 
@@ -79,13 +95,20 @@ class API(Resource):
 
         return test.api_json(), 200
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.tests.create"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": False},
+            "administration": {"admin": True, "editor": True, "viewer": False},
+        }
+    })
     def post(self, project_id: int, test_id: Union[int, str]):
         """ Run test with possible overridden params """
         config_only_flag = request.json.pop('type', False)
         execution_flag = request.json.pop('execution', True)
-        engagement_id = request.json.get('integrations', {}).get('reporters', {})\
+        engagement_id = request.json.get('integrations', {}).get('reporters', {}) \
             .get('reporter_engagement', {}).get('id')
-        
+
         purpose = 'run'
 
         if 'params' in request.json:
@@ -124,9 +147,10 @@ class API(Resource):
 
         if config_only_flag == '_test':
             return {
-                    'test': test.to_json(),
-                    'config': run_test(test, config_only=True, execution=execution_flag),
-                    'api_json': test.api_json(),
-                   }, 200
-        resp = run_test(test, config_only=config_only_flag, execution=execution_flag, engagement_id=engagement_id)
+                'test': test.to_json(),
+                'config': run_test(test, config_only=True, execution=execution_flag),
+                'api_json': test.api_json(),
+            }, 200
+        resp = run_test(test, config_only=config_only_flag, execution=execution_flag,
+                        engagement_id=engagement_id)
         return resp, resp.get('code', 200)

@@ -2,6 +2,7 @@ from flask_restful import Resource
 from flask import request, make_response
 from ...models.ui_baseline import UIBaseline
 from ...models.ui_report import UIReport
+from tools import auth
 
 
 class API(Resource):
@@ -12,21 +13,37 @@ class API(Resource):
     def __init__(self, module):
         self.module = module
 
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.baseline.view"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": True},
+            "administration": {"admin": True, "editor": True, "viewer": True},
+        }
+    })
     def get(self, project_id: int):
         args = request.args
-        project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
-        baseline = UIBaseline.query.filter_by(project_id=project.id, test=args.get("test_name"),
+        project = self.module.context.rpc_manager.call.project_get_or_404(
+            project_id=project_id)
+        baseline = UIBaseline.query.filter_by(project_id=project.id,
+                                              test=args.get("test_name"),
                                               environment=args.get("env")).first()
         report_id = baseline.report_uid if baseline else ""
         return {"baseline_id": report_id}
 
-
+    @auth.decorators.check_api({
+        "permissions": ["performance.ui_performance.baseline.create"],
+        "recommended_roles": {
+            "default": {"admin": True, "editor": True, "viewer": False},
+            "administration": {"admin": True, "editor": True, "viewer": False},
+        }
+    })
     def post(self, project_id: int):
         try:
             report_id = int(request.json['report_id'])
         except (KeyError, ValueError):
             return 'report_id must be provided', 400
-        project = self.module.context.rpc_manager.call.project_get_or_404(project_id=project_id)
+        project = self.module.context.rpc_manager.call.project_get_or_404(
+            project_id=project_id)
         report: UIReport = UIReport.query.filter(
             UIReport.project_id == project.id,
             UIReport.id == report_id
