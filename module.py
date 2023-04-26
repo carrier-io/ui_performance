@@ -82,7 +82,7 @@ class Module(module.ModuleModel):
             kind="slot",
             prefix="ui_results_",
             permissions={
-                "permissions": ["performance.ui_performance.reports"],
+                "permissions": ["performance.ui_performance_results"],
                 "recommended_roles": {
                     "administration": {"admin": True, "editor": True, "viewer": False},
                     "default": {"admin": True, "editor": True, "viewer": False},
