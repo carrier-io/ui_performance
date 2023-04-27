@@ -25,9 +25,6 @@ class Slot:  # pylint: disable=E1101,R0903
         return theme.empty_content
 
     @web.slot('ui_results_scripts')
-    @auth.decorators.check_slot({
-        "permissions": ["performance.ui_performance.reports"]
-    })
     def scripts(self, context, slot, payload):
         from pylon.core.tools import log
         log.info('slot: [%s], payload: %s', slot, payload)
@@ -44,9 +41,6 @@ class Slot:  # pylint: disable=E1101,R0903
             )
 
     @web.slot('ui_results_styles')
-    @auth.decorators.check_slot({
-        "permissions": ["performance.ui_performance.reports"]
-    })
     def styles(self, context, slot, payload):
         from pylon.core.tools import log
         log.info('slot: [%s], payload: %s', slot, payload)
