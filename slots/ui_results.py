@@ -7,7 +7,7 @@ from ..models.ui_report import UIReport
 class Slot:  # pylint: disable=E1101,R0903
     @web.slot('ui_results_content')
     @auth.decorators.check_slot({
-        "permissions": ["performance.ui_performance.reports"]
+        "permissions": ["performance.ui_performance_results"]
     })
     def content(self, context, slot, payload):
         log.info('slot: [%s] || payload: [%s]', slot, payload)
