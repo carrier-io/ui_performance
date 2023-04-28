@@ -305,6 +305,18 @@ const UiTestCreateModal = {
                                            <div class="invalid-feedback">[[ get_error_msg('entrypoint') ]]</div>
                                 </div>
                             </div>
+                            <div class="form-group mt-3">
+                                <div class="form-group">
+                                    <p class="font-h5 font-semibold">Custom CMD</p>
+                                    <p class="font-h6 font-weight-400">You may also add a command for test runner</p>
+                                    <input type="text" class="form-control form-control-alternative mt-2"
+                                           placeholder="Custom CMD"
+                                           v-model='custom_cmd'
+                                           :class="{ 'is-invalid': errors?.custom_cmd }"
+                                           >
+                                           <div class="invalid-feedback">[[ get_error_msg('custom_cmd') ]]</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -441,7 +453,8 @@ const UiTestCreateModal = {
                             this.$refs.locations.chosen_location_settings,
                             this.cloud_settings,
                             ["id", "integration_name", "instance_type"]
-                        )
+                        ),
+                        custom_cmd: this.custom_cmd
                     },
                     // parallel_runners: this.parallel_runners,
                     parallel_runners: 1,
@@ -543,6 +556,7 @@ const UiTestCreateModal = {
                 env_vars: {},
                 // customization: {},
                 cc_env_vars: {},
+                custom_cmd: '',
 
                 errors: {},
 
@@ -554,7 +568,7 @@ const UiTestCreateModal = {
         set(data) {
             const {test_parameters, integrations, schedules, source, env_vars: all_env_vars, ...rest} = data
 
-            const {cpu_quota, memory_quota, cloud_settings, ...env_vars} = all_env_vars
+            const {cpu_quota, memory_quota, cloud_settings, custom_cmd, ...env_vars} = all_env_vars
 
             let test_type = ''
             let env_type = ''
@@ -573,7 +587,9 @@ const UiTestCreateModal = {
                 return true
             })
             // common fields
-            Object.assign(this.$data, {...rest, cpu_quota, memory_quota, cloud_settings, env_vars, test_type, env_type})
+            Object.assign(this.$data, {...rest, cpu_quota, memory_quota, cloud_settings, 
+                env_vars, test_type, env_type, custom_cmd
+            })
 
             // special fields
             this.test_parameters.set(test_parameters_filtered)
@@ -668,6 +684,17 @@ const UiTestRunModal = {
                                 <div class="invalid-feedback select_error-msg">[[ get_error_msg('aggregation') ]]</div>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <p class="font-h5 font-semibold">Custom CMD</p>
+                            <p class="font-h6 font-weight-400">You may also add a command for test runner</p>
+                            <div class="custom-input mb-3 mt-2 mr-3"
+                                :class="{ 'invalid-input': errors?.custom_cmd }">
+                                <input type="text"
+                                    placeholder="Custom CMD"
+                                    v-model='custom_cmd'
+                                >
+                            </div>
+                        </div>
 
                         <UILocations 
                             v-model:location="location"
@@ -722,6 +749,7 @@ const UiTestRunModal = {
                 env_vars: {},
                 // customization: {},
                 cc_env_vars: {},
+                custom_cmd: '',
 
                 errors: {},
             }
@@ -735,10 +763,10 @@ const UiTestRunModal = {
             console.log('set data called', data)
             const {test_parameters, env_vars: all_env_vars, integrations, ...rest} = data
 
-            const {cpu_quota, cloud_settings, memory_quota, ...env_vars} = all_env_vars
+            const {cpu_quota, cloud_settings, memory_quota, custom_cmd, ...env_vars} = all_env_vars
 
             // common fields
-            Object.assign(this.$data, {...rest, cpu_quota, cloud_settings, memory_quota, env_vars,})
+            Object.assign(this.$data, {...rest, cpu_quota, cloud_settings, memory_quota, custom_cmd, env_vars,})
 
             // special fields
             this.test_parameters.set(test_parameters)
@@ -776,9 +804,11 @@ const UiTestRunModal = {
                         cpu_quota: this.cpu_quota,
                         memory_quota: this.memory_quota,
                         cloud_settings: this.cloud_settings,
-                        ENV: env_type["default"]
+                        ENV: env_type["default"],
+                        custom_cmd: this.custom_cmd
                     },
-                    parallel_runners: this.parallel_runners,
+                    // parallel_runners: this.parallel_runners,
+                    parallel_runners: 1,
                     location: this.location
                 },
                 test_parameters: test_params,
