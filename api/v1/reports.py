@@ -19,6 +19,7 @@ class API(Resource):
 
     def __init__(self, module):
         self.module = module
+        self.sio = self.module.context.sio
 
     @auth.decorators.check_api({
         "permissions": ["performance.ui_performance.reports.view"],
@@ -156,6 +157,8 @@ class API(Resource):
             report.passed = False
 
         report.commit()
+        if args["status"]['percentage'] == 100:
+            self.sio.emit('ui_test_finished', report.to_json())
         return report.to_json(), 200
 
     @auth.decorators.check_api({
