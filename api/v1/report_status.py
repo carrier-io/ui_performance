@@ -1,4 +1,3 @@
-from json import loads
 from flask import request, make_response
 from flask_restful import Resource
 from tools import auth
@@ -12,6 +11,7 @@ class API(Resource):
 
     def __init__(self, module):
         self.module = module
+        self.sio = self.module.context.sio
 
     @auth.decorators.check_api({
         "permissions": ["performance.ui_performance.reports.view"],
@@ -41,4 +41,7 @@ class API(Resource):
         test_status = request.json["test_status"]
         report.test_status = test_status
         report.commit()
+        self.sio.emit("ui_test_status_updated", {"status": test_status, 'report_id': report.id})
+        if test_status['percentage'] == 100:
+            self.sio.emit('ui_test_finished', report.to_json())
         return {"message": f"status changed to {report.test_status['status']}"}

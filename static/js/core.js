@@ -902,4 +902,22 @@ $(document).on('vue_init', () => {
         ).join(',')
         ids_to_delete && ui_results_delete(ids_to_delete)
     })
+    socket.on("ui_test_status_updated", data => {
+        $('#results_table').bootstrapTable('updateByUniqueId', {
+            id: data['report_id'],
+            row: {
+                'test_status': data['status']
+            }
+        })
+    })
+    socket.on("ui_test_finished", data => {
+        $('#results_table').bootstrapTable('updateByUniqueId', {
+            id: data['id'],
+            row: {
+                'start_time': data['start_time'],
+                'duration': data['duration'],
+                'test_status': data['test_status']
+            }
+        })
+    })
 })
