@@ -128,11 +128,11 @@ const UiResultInfo = {
                                     <table>
                                         <tr>
                                             <td class="text-gray-500 font-h6 font-semibold">STARTED</td>
-                                            <td class="font-h5" id="start_time">{{ test_data["start_time"] }}</td>
+                                            <td class="font-h5" id="start_time">{{ new Date(test_data.start_time)?.toLocaleString() || ''}}</td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-500 font-h6 font-semibold">ENDED</td>
-                                            <td class="font-h5"  id="end_time font-h5">{{ test_data["end_time"] }}</td>
+                                            <td class="font-h5" id="end_time font-h5">{{ new Date(test_data.end_time)?.toLocaleString() || ''}}</td>
                                         </tr>
                                     </table>
                                     <table>
