@@ -1,5 +1,13 @@
 const ui_api_base_url = '/api/v1/ui_performance'
 var ui_test_formatters = {
+    name_uid(value, row) {
+        return `
+            <div>
+                <p class="mb-0">${row.name}</p>
+                <span class="font-weight-400 text-gray-500 font-h6">${row.test_uid}</span>
+            </div>
+        `
+    },
     runner(value, row, index) {
         switch (value) {
             case 'Sitespeed (browsertime)':
@@ -241,7 +249,7 @@ const UiTestCreateModal = {
                                 <p class="font-h5 font-semibold">Test runner</p>
                                 <p class="font-h6 font-weight-400">Choose the runner for the test.</p>
                                 <div class="custom-input w-100-imp">
-                                    <select class="selectpicker bootstrap-select__b mt-1" data-style="btn" 
+                                    <select class="selectpicker bootstrap-select__b displacement-ml-4 mt-2" data-style="btn" 
                                     v-model="runner"
                                     :class="{ 'is-invalid': errors?.runner }"
                                 >
@@ -257,7 +265,7 @@ const UiTestCreateModal = {
                             <div class="row">
                                 <div class="form-group col-6 d-flex flex-column justify-content-end pr-2.25">
                                     <p class="font-h5 font-semibold">Number of loops</p>
-                                    <p class="font-h6 font-weight-400">How many times to repeat scenario execution.</p>
+                                    <p class="font-h6 font-weight-400">How many times to repeat test scenario.</p>
                                     <div class="custom-input mt-2"
                                         :class="{ 'invalid-input': errors?.loops }"
                                     >
