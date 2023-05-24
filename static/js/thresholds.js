@@ -25,7 +25,7 @@ const ThresholdModal = {
             <div class="modal-header">
                 <div class="row w-100">
                     <div class="col">
-                        <h2>[[ mode === 'update' ? 'Update' : 'Create' ]] threshold</h2>
+                        <p class="font-h3 font-bold">[[ mode === 'update' ? 'Update' : 'Create' ]] threshold</p>
                     </div>
                     <div class="col-xs">
                         <button type="button" class="btn  btn-secondary mr-2" data-dismiss="modal" aria-label="Close">
@@ -43,9 +43,9 @@ const ThresholdModal = {
             <div class="modal-body">
                 <div class="section">
                     <div class="row">
-                        <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2">Test</h5>
-                            <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
+                        <div class="d-flex flex-column w-100 mb-3">
+                            <p class="font-h5 font-semibold mb-1">Test</p>
+                            <select class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn"
                                 v-model="test"
                                 @change="handle_change_test"
                                 :disabled="mode !== 'create'"
@@ -58,9 +58,9 @@ const ThresholdModal = {
                     </div>
 
                     <div class="row">
-                        <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2">Test Environment</h5>
-                            <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
+                        <div class="d-flex flex-column w-100 mb-3">
+                            <p class="font-h5 font-semibold mb-1">Test Environment</p>
+                            <select class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn"
                                 :disabled="!test"
                                 v-model="environment"
                                 @change="handle_change_env"
@@ -73,12 +73,10 @@ const ThresholdModal = {
                     </div>
 
                     <div class="row">
-                        <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2">Scope</h5>
-                            <p>
-                                <h13>Request(s) you want thresholds to be applied to.</h13>
-                            </p>
-                            <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
+                        <div class="d-flex flex-column w-100 mb-3">
+                            <p class="font-h5 font-semibold">Scope</p>
+                            <p class="font-h6 font-weight-400 mb-2">Request(s) you want thresholds to be applied to.</p>
+                            <select class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn"
                                 :disabled="!environment"
                                 v-model="scope"
                             >
@@ -92,12 +90,10 @@ const ThresholdModal = {
                     </div>
 
                     <div class="row">
-                        <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2">Target</h5>
-                            <p>
-                                <h13>Metric you want to be measured against.</h13>
-                            </p>
-                            <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
+                        <div class="d-flex flex-column w-100 mb-3">
+                        <p class="font-h5 font-semibold">Target</p>
+                        <p class="font-h6 font-weight-400 mb-2">Metric you want to be measured against.</p>
+                            <select class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn"
                                 v-model="target"
                             >
                                 <option value="load_time">Load Time</option>
@@ -115,12 +111,10 @@ const ThresholdModal = {
                     </div>
 
                     <div class="row">
-                        <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2">Aggregation</h5>
-                            <p>
-                                <h13>Math aggregation of the metrics to be applied for threshold calculation.</h13>
-                            </p>
-                            <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
+                        <div class="d-flex flex-column w-100 mb-3">
+                        <p class="font-h5 font-semibold">Aggregation</p>
+                        <p class="font-h6 font-weight-400 mb-2">Math aggregation of the metrics to be applied for threshold calculation.</p>
+                            <select class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn"
                                 v-model="aggregation"
                             >
                                 <option value="max">Maximum</option>
@@ -134,12 +128,10 @@ const ThresholdModal = {
                     </div>
 
                     <div class="row">
-                        <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2">Comparison</h5>
-                            <p>
-                                <h13>Rule to be used to compare results with thresholds.</h13>
-                            </p>
-                            <select class="selectpicker bootstrap-select__b mb-3" data-style="btn"
+                        <div class="d-flex flex-column w-100 mb-3">
+                        <p class="font-h5 font-semibold">Comparison</p>
+                        <p class="font-h6 font-weight-400 mb-2">Rule to be used to compare results with thresholds.</p>
+                            <select class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn"
                                 v-model="comparison"
                             >
                                 <option value="gte">&gt;=</option>
@@ -154,7 +146,7 @@ const ThresholdModal = {
 
                     <div class="row">
                         <div class="d-flex flex-column w-100">
-                            <h5 class="pt-2">Threshold value</h5>
+                            <p class="font-h5 font-semibold mb-1">Threshold value</p>
                             <input type="number" class="form-control form-control-alternative"
                                 v-model="value"
                             >
@@ -324,11 +316,23 @@ const threshold_delete = ids => {
 
 
 var threshold_formatters = {
+    test_env(value, row) {
+        return `
+            <div>
+                <p class="mb-0">${row.test}</p>
+                <span class="font-weight-400 text-gray-500 font-h6">${row.environment}</span>
+            </div>
+        `
+    },
     actions(value, row, index) {
         return `
         <div class="d-flex justify-content-end">
-            <button type="button" class="btn btn-24 btn-action action_edit"><i class="fas fa-cog"></i></button>
-            <button type="button" class="btn btn-24 btn-action action_delete"><i class="fas fa-trash-alt"></i></button>
+            <button type="button" class="btn btn-default btn-xs btn-table btn-icon__xs action_edit">
+                <i class="icon__18x18 icon-settings"></i>
+            </button>
+            <button type="button" class="btn btn-default btn-xs btn-table btn-icon__xs action_delete ml-2">
+                <i class="icon__18x18 icon-delete"></i>
+            </button>
         </div>
         `
     },
@@ -340,7 +344,12 @@ var threshold_formatters = {
             ["gt", ">"],
             ["eq", "=="]
         ]).get(row.comparison)
-        return `${row.aggregation}(${row.target}) ${comparison}`
+        return `
+            <div>
+                <p class="mb-0">${row.aggregation} ${comparison} ${row.value}</p>
+                <span class="font-weight-400 text-gray-500 font-h6">${row.target}</span>
+            </div>
+        `
     },
     scopes(value, row, index) {
         return value.split("@")[1] || value
