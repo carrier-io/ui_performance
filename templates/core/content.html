@@ -5,7 +5,8 @@
             <Table-Card
                     @register="register"
                     instance_name="table_tests"
-
+                    :adaptive-height="true"
+                    :wide-table-row="true"
                     header='UI tests'
                     :table_attributes="{
                         'data-url': '/api/v1/ui_performance/tests/{{ tools.session_project.get() }}',
@@ -29,6 +30,8 @@
                     <th scope="col" data-checkbox="true"></th>
                     <th data-visible="false" data-field="id">index</th>
                     <th scope="col" data-sortable="true"
+                        class="w-100"
+                        data-formatter=ui_test_formatters.name_uid
                         data-cell-style="ui_test_formatters.name_style"
                         data-field="name"
                     >
@@ -36,17 +39,12 @@
                     </th>
                     <th scope="col" data-sortable="true"
                         data-cell-style="ui_test_formatters.name_style"
-                        data-field="test_uid"
-                    >
-                        UUID
-                    </th>
-                    <th scope="col" data-sortable="true"
-                        data-cell-style="ui_test_formatters.name_style"
                         data-field="entrypoint"
+                        class="min-w-44 align-top"
                     >
                         Entrypoint
                     </th>
-                    <th scope="col" data-align="center" data-sortable="true"
+                    <th scope="col" data-align="center"
                         data-formatter=ui_test_formatters.runner
                         data-field="runner"
                     >
@@ -76,6 +74,7 @@
             :adaptive-height="true"
             :table_attributes="{
                 'data-url': '/api/v1/ui_performance/reports/{{ tools.session_project.get() }}',
+                id: 'results_table'
             }"
             container_classes="mt-3"
     >
