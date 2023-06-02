@@ -210,3 +210,11 @@ class API(Resource):
             return sorted(data)[int(math.ceil((size * percentile) / 100)) - 1]
         else:
             return 0
+
+    def patch(self, project_id: int):
+        # report = UIReport.query.filter(
+        #     UIReport.project_id == project_id,
+        #     UIReport.uid == request.json["build_id"]
+        # ).first()
+        # write_test_run_logs_to_minio_bucket(report)
+        return {"message": "updated"}, 201
