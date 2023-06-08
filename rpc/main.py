@@ -2,12 +2,11 @@ from datetime import datetime
 from json import loads
 from typing import Optional, Union
 
-import boto3
 from pydantic import ValidationError
 from pylon.core.tools import web, log
 from sqlalchemy import desc
 
-from tools import rpc_tools
+from tools import rpc_tools, MinioClient
 from ..models.pd.quality_gate import QualityGate
 from ..models.pd.report import ReportGetModel
 from ..models.pd.test_parameters import UITestParamsCreate, UITestParamsRun, UITestParams
@@ -15,7 +14,6 @@ from ..models.pd.ui_test import TestOverrideable, TestCommon
 from ..models.ui_report import UIReport
 from ..models.ui_tests import UIPerformanceTest
 from ..utils.utils import run_test
-from ...shared.tools.constants import MINIO_ENDPOINT, MINIO_ACCESS, MINIO_SECRET, MINIO_REGION
 
 
 class RPC:
@@ -26,10 +24,13 @@ class RPC:
             report = UIReport.query.get_or_404(run_id)
         bucket = report.name.replace("_", "").lower()
         file_name = f"{report.uid}.csv.gz"
+        s3_settings = report.test_config.get(
+            'integrations', {}).get('system', {}).get('s3_integration', {})
         avg_page_load = 0
         thresholds_missed = 0
         try:
-            results = self.get_ui_results(bucket, file_name, report.project_id)
+            results = self.get_ui_results(bucket=bucket, file_name=file_name, 
+                                          project_id=report.project_id, **s3_settings)
             totals = list(map(lambda x: int(x["load_time"]), results))
             try:
                 avg_page_load = round(sum(totals) / len(totals) / 1000, 2)
@@ -114,42 +115,22 @@ class RPC:
 
     @web.rpc('get_ui_results', 'get_ui_results')
     @rpc_tools.wrap_exceptions(RuntimeError)
-    def get_ui_results(self, bucket: str, file_name: str, project_id: int, skip_aggregated: bool = True) -> list:
+    def get_ui_results(self, 
+                       bucket: str, 
+                       file_name: str, 
+                       project_id: int, 
+                       skip_aggregated: bool = True,
+                       client: MinioClient = None,
+                       integration_id: int = None,
+                       is_local: bool=True
+                       ) -> list:
         if skip_aggregated:
-            query = "select * from s3object s where s.loop != 0"
+            query = " where s.loop != 0"
         else:
-            query = "select * from s3object s"
-        s3 = boto3.client('s3',
-                          endpoint_url=MINIO_ENDPOINT,
-                          aws_access_key_id=MINIO_ACCESS,
-                          aws_secret_access_key=MINIO_SECRET,
-                          region_name=MINIO_REGION)
-
-        r = s3.select_object_content(
-            Bucket=f'p--{project_id}.{bucket}',
-            Key=f'{file_name}',
-            ExpressionType='SQL',
-            Expression=query,
-            InputSerialization={
-                'CSV': {
-                    "FileHeaderInfo": "USE",
-                },
-                'CompressionType': 'GZIP',
-            },
-            OutputSerialization={'JSON': {}},
-        )
-        results = []
-        for event in r['Payload']:
-            if 'Records' in event:
-                records = event['Records']['Payload'].decode('utf-8')
-                for each in records.split("\n"):
-                    try:
-                        rec = loads(each)
-                        results.append(rec)
-                    except:
-                        pass
-
-        return results
+            query = ""
+        if not client:
+            client = MinioClient.from_project_id(project_id, integration_id, is_local)
+        return client.select_object_content(bucket, file_name, query)
 
     @web.rpc('ui_performance_get_tests')
     @rpc_tools.wrap_exceptions(RuntimeError)

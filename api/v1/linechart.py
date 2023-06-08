@@ -29,7 +29,11 @@ class API(Resource):
             and_(UIReport.project_id == project.id, UIReport.id == report_id)).first()
         bucket = report.name.replace("_", "").lower()
         file_name = f"{report.uid}.csv.gz"
-        results = self.module.get_ui_results(bucket, file_name, project_id)
+        s3_settings = report.test_config.get(
+            'integrations', {}).get('system', {}).get('s3_integration', {})
+        log.info(f's3_settings {s3_settings}')
+        results = self.module.get_ui_results(bucket=bucket, file_name=file_name, 
+                                             project_id=project_id, **s3_settings)
         data = []
         names = []
         for each in results:
