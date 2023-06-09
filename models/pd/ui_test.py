@@ -85,10 +85,10 @@ class TestCommon(TestOverrideable):
 
     @validator('source')
     def validate_sources(cls, value: dict):
-        validated = rpc_tools.RpcMixin().rpc.call.parse_source(value)
+        validated: BaseModel = rpc_tools.RpcMixin().rpc.call.parse_source(value)
         return {
             'name': value['name'],
-            **validated.dict()
+            **validated.dict(by_alias=True)
         }
 
     @validator('aggregation')
