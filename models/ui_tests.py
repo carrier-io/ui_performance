@@ -147,6 +147,7 @@ class UIPerformanceTest(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin)
                         func=f'ui_performance_execution_json_config_{integration_name}',
                         timeout=3,
                         integration_data=integration_data,
+                        project_id = self.project_id
                     )
                 except Empty:
                     log.error(f'Cannot find execution json compiler for {integration_name}')

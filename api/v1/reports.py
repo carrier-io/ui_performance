@@ -19,6 +19,7 @@ class API(Resource):
 
     def __init__(self, module):
         self.module = module
+        self.sio = self.module.context.sio
 
     @auth.decorators.check_api({
         "permissions": ["performance.ui_performance.reports.view"],
@@ -156,6 +157,8 @@ class API(Resource):
             report.passed = False
 
         report.commit()
+        if args["status"]['percentage'] == 100:
+            self.sio.emit('ui_test_finished', report.to_json())
         return report.to_json(), 200
 
     @auth.decorators.check_api({
@@ -207,3 +210,11 @@ class API(Resource):
             return sorted(data)[int(math.ceil((size * percentile) / 100)) - 1]
         else:
             return 0
+
+    def patch(self, project_id: int):
+        # report = UIReport.query.filter(
+        #     UIReport.project_id == project_id,
+        #     UIReport.uid == request.json["build_id"]
+        # ).first()
+        # write_test_run_logs_to_minio_bucket(report)
+        return {"message": "updated"}, 201
