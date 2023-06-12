@@ -2,30 +2,46 @@ const UiResultTable = {
     props: ['url', 'selectedLoop'],
     data() {
         return {
-            dataTable: []
+            dataTable: [],
+            selectedType: 'all',
         }
     },
     watch: {
         selectedLoop(newValue, oldValue) {
-            const table = document.getElementById("ui_summary_table");
-            const tr = table.getElementsByTagName("tr");
-            if (newValue === 'all') {
-                for (let i = 0; i < tr.length; i++) {
-                    tr[i].style.display = "";
-                }
-                return
-            }
-            for (let i = 0; i < tr.length; i++) {
-                const td = tr[i].getElementsByTagName("td")[1];
-                if (td) {
-                    const txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(newValue) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
+            this.filterTable(this.selectedType, newValue);
+        }
+    },
+    mounted() {
+        const vm = this;
+        $('.custom-tabs a[data-toggle="pill"]').on('shown.bs.tab', function (event) {
+            const tabType = $(event.target).text().toLowerCase();
+            const singleType = tabType === 'all' ? tabType : tabType.substring(0, tabType.length - 1);
+            vm.selectedType = singleType;
+            vm.filterTable(vm.selectedType, vm.selectedLoop);
+        })
+    },
+    methods: {
+        filterTable(type, loop) {
+            $('#ui_summary_table').bootstrapTable('filterBy', {
+                type: type,
+                loop: loop,
+            }, {
+                'filterAlgorithm': (row, filters) => {
+                    if (filters.type === 'all' && filters.loop === 'all') return true;
+
+                    if (filters.loop === 'all') {
+                        const type = filters ? filters.type : '';
+                        return row.type.includes(type);
                     }
+                    if (filters.type === 'all') {
+                        const loop = filters ? filters.loop : '';
+                        return row.loop.includes(loop);
+                    }
+                    const type = filters ? filters.type : '';
+                    const loop = filters ? filters.loop : '';
+                    return row.type.includes(type) && row.loop.includes(loop);
                 }
-            }
+            })
         }
     },
     template: `
