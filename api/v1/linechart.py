@@ -31,7 +31,6 @@ class API(Resource):
         file_name = f"{report.uid}.csv.gz"
         s3_settings = report.test_config.get(
             'integrations', {}).get('system', {}).get('s3_integration', {})
-        log.info(f's3_settings {s3_settings}')
         results = self.module.get_ui_results(bucket=bucket, file_name=file_name, 
                                              project_id=project_id, **s3_settings)
         data = []
