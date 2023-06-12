@@ -6,7 +6,7 @@ from flask import request, make_response
 
 from ...models.pd.test_parameters import UITestParamsRun
 from ...models.ui_report import UIReport
-from tools import MinioClient, api_tools, auth
+from tools import api_tools, auth
 from datetime import datetime
 
 from ...models.ui_tests import UIPerformanceTest

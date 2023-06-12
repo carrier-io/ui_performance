@@ -24,8 +24,10 @@ class API(Resource):
                                           uid=report_id).first().to_json()
         bucket = report["name"].replace("_", "").lower()
         file_name = f"{report_id}.csv.gz"
-        results = self.module.get_ui_results(bucket, file_name, project_id)
-
+        s3_settings = report['test_config'].get(
+            'integrations', {}).get('system', {}).get('s3_integration', {})
+        results = self.module.get_ui_results(bucket=bucket, file_name=file_name, 
+                                             project_id=project_id, **s3_settings)
         response = []
         for res in results:
             res[
