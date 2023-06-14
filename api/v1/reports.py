@@ -10,6 +10,7 @@ from tools import MinioClient, api_tools, auth
 from datetime import datetime
 
 from ...models.ui_tests import UIPerformanceTest
+from ...utils.utils import test_parameter_value_by_name
 
 
 class API(Resource):
@@ -71,11 +72,14 @@ class API(Resource):
             project_id=project_id)
 
         test_config = None
+        test = UIPerformanceTest.query.filter(
+            UIPerformanceTest.test_uid == args.get('test_uid')
+        ).first()
         if 'test_params' in args:
             try:
-                test = UIPerformanceTest.query.filter(
-                    UIPerformanceTest.test_uid == args.get('test_id')  # todo: no test_uid
-                ).first()
+                # test = UIPerformanceTest.query.filter(
+                #     UIPerformanceTest.test_uid == args.get('test_id')  # todo: no test_uid
+                # ).first()
                 # test._session.expunge(test) # maybe we'll need to detach object from orm
                 test.__dict__['test_parameters'] = test.filtered_test_parameters_unsecret(
                     UITestParamsRun.from_control_tower_cmd(
@@ -88,13 +92,15 @@ class API(Resource):
 
         report = UIReport(
             uid=args['report_id'],
+            test_uid=args['test_uid'],
             name=args["test_name"],
             project_id=project.id,
             start_time=args["time"],
             is_active=True,
             browser=args["browser_name"],
             browser_version=args["browser_version"],
-            environment=args["env"],
+            environment=test_parameter_value_by_name(test.test_parameters, 'env_type'),
+            test_type=test_parameter_value_by_name(test.test_parameters, 'test_type'),
             loops=args["loops"],
             aggregation=args["aggregation"]
         )

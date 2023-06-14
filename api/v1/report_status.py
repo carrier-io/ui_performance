@@ -2,10 +2,12 @@ from flask import request, make_response
 from flask_restful import Resource
 from tools import auth
 from ...models.ui_report import UIReport
+from typing import Union
 
 
 class API(Resource):
     url_params = [
+        '<int:project_id>/<int:report_id>',
         '<int:project_id>/<string:report_id>',
     ]
 
@@ -20,11 +22,10 @@ class API(Resource):
             "administration": {"admin": True, "editor": True, "viewer": True},
         }
     })
-    def get(self, project_id: int, report_id: str):
+    def get(self, project_id: int, report_id: Union[int, str]):
         project = self.module.context.rpc_manager.call.project_get_or_404(
             project_id=project_id)
-        report = UIReport.query.filter_by(project_id=project.id,
-                                          uid=report_id).first().to_json()
+        report = UIReport.query.filter(UIReport.get_api_filter(project.id, report_id)).first().to_json()
         return {"message": report["test_status"]["status"]}
 
     @auth.decorators.check_api({
@@ -34,10 +35,10 @@ class API(Resource):
             "administration": {"admin": True, "editor": True, "viewer": False},
         }
     })
-    def put(self, project_id: int, report_id: str):
+    def put(self, project_id: int, report_id: Union[int, str]):
         project = self.module.context.rpc_manager.call.project_get_or_404(
             project_id=project_id)
-        report = UIReport.query.filter_by(project_id=project.id, uid=report_id).first()
+        report = UIReport.query.filter(UIReport.get_api_filter(project.id, report_id)).first()
         test_status = request.json["test_status"]
         report.test_status = test_status
         report.commit()
