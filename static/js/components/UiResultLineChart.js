@@ -1,5 +1,5 @@
 const UiResultLineChart = {
-    props: ['metric', 'lineChartData'],
+    props: ['metric', 'lineChartData', 'selectedLoop'],
     data() {
         lineChart: null
         return {
@@ -31,8 +31,29 @@ const UiResultLineChart = {
     },
     methods: {
         generateDottedDatasets() {
-            const countIndex = this.lineChartData[0].labels.length;
+            let countIndex = this.lineChartData[0].labels.length;
             const dottedData = [];
+
+            if (this.selectedLoop !== 'all') {
+                countIndex = +this.selectedLoop - 1;
+                const data = [];
+                this.lineChartData.forEach((page) => {
+                    if (!this.selectedLegend.includes(page.name)) return
+                    data.push({
+                        y: page.datasets[this.metric][countIndex],
+                        x: page.labels[countIndex]
+                    })
+                })
+                data.sort((a, b) => {
+                    return new Date(b.x) - new Date(a.x);
+                })
+                dottedData.push({
+                    borderDash: [10,5],
+                    data,
+                    label: `loop ${countIndex}`
+                })
+                return dottedData;
+            }
 
             for (let i = 0; i < countIndex; i++) {
                 const data = [];
@@ -63,15 +84,27 @@ const UiResultLineChart = {
                 this.$refs['dottedLegendCbx'].checked = true
                 this.pagesCount = 0;
             }
-
             const datasets = this.lineChartData.map((page, index) => {
                 this.pagesCount++;
                 this.selectedLegend.push(page.name)
+                const lineColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0').toUpperCase();
                 const ds = {
-                    backgroundColor: barColors[index],
-                    borderColor: barColors[index],
+                    backgroundColor: lineColor,
+                    borderColor: lineColor,
                     label: page.name,
                 };
+                if (this.selectedLoop !== 'all') {
+                    const data = [
+                        {
+                            y: page.datasets[metric][+this.selectedLoop - 1],
+                            x: page.labels[+this.selectedLoop - 1],
+                        }
+                    ]
+                    return {
+                        ...ds,
+                        data,
+                    }
+                }
                 const data = page.datasets[metric].map((value, i) => {
                     return {
                         y: value,

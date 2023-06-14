@@ -125,6 +125,8 @@ const UiResultCharts = {
                     <ui-result-line-chart
                         v-if="activeTab === 'line'"
                         :loading="loading"
+                        :key="selectedLoop"
+                        :selectedLoop="selectedLoop"
                         :line-chart-data="lineChartData"
                         :metric="metric">
                     </ui-result-line-chart>
