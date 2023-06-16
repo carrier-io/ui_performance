@@ -1,8 +1,9 @@
 from uuid import uuid4
 
 from ..utils.utils import get_bucket_name, get_report_file_name
-from sqlalchemy import String, Column, Integer, Boolean, JSON, ARRAY, DateTime
+from sqlalchemy import String, Column, Integer, Boolean, JSON, ARRAY, DateTime, and_
 from tools import db_tools, db, rpc_tools, constants as c
+from typing import List, Union, Optional
 
 
 class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
@@ -70,4 +71,16 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
     @property
     def report_file_name(self):
         return get_report_file_name(self.uid)
+
+    @classmethod
+    def get_api_filter(cls, project_id: int, test_id: Union[int, str]):
+        if isinstance(test_id, int):
+            return and_(
+                cls.project_id == project_id,
+                cls.id == test_id
+            )
+        return and_(
+            cls.project_id == project_id,
+            cls.uid == test_id
+        )
 

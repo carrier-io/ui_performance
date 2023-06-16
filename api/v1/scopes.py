@@ -22,21 +22,34 @@ class API(Resource):
         }
     })
     def get(self, project_id: int):
-        project = self.module.context.rpc_manager.call.project_get_or_404(
-            project_id=project_id)
         _scopes = set()
-        client = MinioClient(project=project)
         bucket = request.args['name'].replace("_", "").lower()
-        files = client.list_files(bucket)
-        for each in files:
-            if ".csv.gz" in each["name"]:
-                log.info(each["name"])
-                results = self.module.get_ui_results(bucket, each["name"], project_id)
-                for page in results:
-                    _scopes.add(
-                        dumps({"name": page["name"], "identifier": page["identifier"]}))
+        integrations_args = self._get_s3_inregrations_args(project_id)
+        for integration_args in integrations_args:
+            try:
+                client = MinioClient.from_project_id(project_id, **integration_args)
+                files = client.list_files(bucket)
+            except Exception:
+                files = []
+            for each in files:
+                if ".csv.gz" in each["name"]:
+                    results = self.module.get_ui_results(bucket, each["name"], project_id, 
+                                                         client, **integration_args)
+                    for page in results:
+                        _scopes.add(
+                            dumps({"name": page["name"], "identifier": page["identifier"]}))
 
         scopes = []
         for each in _scopes:
             scopes.append(loads(each))
         return scopes, 200
+
+    def _get_s3_inregrations_args(self, project_id):
+        integrations_args = []
+        integrations = self.module.context.rpc_manager.call.integrations_get_all_integrations_by_name(
+            project_id, 's3_integration')
+        for integration in integrations:
+            integrations_args.append({'integration_id': integration.id, 
+                                      'is_local': bool(integration.project_id)
+                                      })
+        return integrations_args
