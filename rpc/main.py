@@ -93,7 +93,7 @@ class RPC:
 
     @web.rpc('ui_performance_test_create_test_parameters', 'parse_test_parameters')
     @rpc_tools.wrap_exceptions(ValidationError)
-    def parse_test_parameters(self, data: Union[list, dict], **kwargs) -> dict:
+    def parse_test_parameters(self, data: Union[list, dict], project_id: int, **kwargs) -> dict:
         purpose = kwargs.pop('purpose', None)
         if purpose == 'run':
             pd_object = UITestParamsRun(test_parameters=data)
