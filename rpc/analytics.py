@@ -18,6 +18,7 @@ class ReportBuilderReflection(BaseModel):
     name: str
     bucket_name: Optional[str]
     report_file_name: Optional[str]
+    s3_settings: dict
 
     @validator('bucket_name', always=True)
     def set_bucket_name(cls, value: str, values: dict):
@@ -43,7 +44,7 @@ class ReportResultsModel(BaseModel):
     tti: int
     fcp: int
     lcp: int
-    cls: int
+    cls: float
     tbt: int
     fvc: int
     lvc: int
@@ -73,6 +74,7 @@ columns = OrderedDict((
     ('time_to_first_byte', UIReport.time_to_first_byte),
     ('time_to_first_paint', UIReport.time_to_first_paint),
     ('total_blocking_time', UIReport.total_blocking_time),
+    ('s3_settings', UIReport.test_config),
 ))
 
 
@@ -175,7 +177,8 @@ class RPC:
             results = self.get_ui_results(
                 report_reflection.bucket_name,
                 report_reflection.report_file_name,
-                project_id
+                project_id,
+                **report_reflection.s3_settings
             )
             data[report_reflection.id] = dict()
 

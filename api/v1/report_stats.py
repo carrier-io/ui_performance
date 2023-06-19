@@ -49,19 +49,18 @@ class API(Resource):
     })
     def delete(self, project_id: int):
         args = request.args
-        project = self.module.context.rpc_manager.call.project_get_or_404(
-            project_id=project_id)
         query_result = UIReport.query.filter(
-            and_(UIReport.project_id == project.id, UIReport.id.in_(args["id[]"]))
+            and_(UIReport.project_id == project_id, UIReport.id.in_(args["id[]"]))
         ).all()
-
         for each in query_result:
-            self.__delete_report_results(project, each)
+            self.__delete_report_results(project_id, each)
             each.delete()
         return {"message": "deleted"}
 
-    def __delete_report_results(self, project, report):
+    def __delete_report_results(self, project_id, report):
+        s3_settings = report.test_config.get(
+            'integrations', {}).get('system', {}).get('s3_integration', {})
         bucket = report.name.replace("_", "").lower()
         file_name = f"{report.uid}.csv.gz"
-        client = MinioClient(project=project)
+        client = MinioClient.from_project_id(project_id, **s3_settings)
         client.remove_file(bucket, file_name)
