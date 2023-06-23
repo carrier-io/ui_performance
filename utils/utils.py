@@ -131,7 +131,6 @@ def parse_test_data(project_id: int, request_data: dict,
                 func=f'ui_performance_test_create_{k}',
                 timeout=2,
                 data=v,
-                project_id=project_id,
                 **test_create_rpc_kwargs
             ))
         except Empty:
