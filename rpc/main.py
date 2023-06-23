@@ -71,7 +71,7 @@ class RPC:
 
     @web.rpc('ui_performance_execution_json_config_quality_gate')
     @rpc_tools.wrap_exceptions(RuntimeError)
-    def make_execution_json_config(self, integration_data: dict, project_id: int) -> dict:
+    def make_execution_json_config(self, integration_data: dict) -> dict:
         """ Prepare execution_json for this integration """
         # no extra data to add to execution json
         # but rpc needs to exist
@@ -93,7 +93,7 @@ class RPC:
 
     @web.rpc('ui_performance_test_create_test_parameters', 'parse_test_parameters')
     @rpc_tools.wrap_exceptions(ValidationError)
-    def parse_test_parameters(self, data: Union[list, dict], project_id: int, **kwargs) -> dict:
+    def parse_test_parameters(self, data: Union[list, dict], **kwargs) -> dict:
         purpose = kwargs.pop('purpose', None)
         if purpose == 'run':
             pd_object = UITestParamsRun(test_parameters=data)
