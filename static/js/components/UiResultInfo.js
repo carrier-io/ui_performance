@@ -34,6 +34,10 @@ const UiResultInfo = {
                 }
             })
         },
+        format_date(d) {
+            const date_obj = new Date(d)
+            return isNaN(date_obj) ? '' : date_obj.toLocaleString()
+        },
     },
     template: `
         <div class="card card-12">
@@ -128,11 +132,11 @@ const UiResultInfo = {
                                     <table>
                                         <tr>
                                             <td class="text-gray-500 font-h6 font-semibold">STARTED</td>
-                                            <td class="font-h5" id="start_time">{{ new Date(test_data.start_time)?.toLocaleString() || ''}}</td>
+                                            <td class="font-h5" id="start_time">{{ format_date(test_data.start_time) }}</td>
                                         </tr>
                                         <tr>
                                             <td class="text-gray-500 font-h6 font-semibold">ENDED</td>
-                                            <td class="font-h5" id="end_time font-h5">{{ new Date(test_data.end_time)?.toLocaleString() || ''}}</td>
+                                            <td class="font-h5" id="end_time font-h5">{{ format_date(test_data.end_time) }}</td>
                                         </tr>
                                     </table>
                                     <table>
