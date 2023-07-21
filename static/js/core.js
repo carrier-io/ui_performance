@@ -303,14 +303,17 @@ const UiTestCreateModal = {
                             
                             <div class="form-group mt-3">
                                 <div class="form-group">
-                                    <p class="font-h5 font-semibold">Entrypoint</p>
-                                    <p class="font-h6 font-weight-400">Script name</p>
-                                    <input type="text" class="form-control form-control-alternative mt-2"
+                                    <label class="d-block">
+                                        <p class="font-h5 font-semibold">Entrypoint</p>
+                                        <p class="font-h6 font-weight-400">Script name</p>
+                                        <input type="text" class="form-control form-control-alternative mt-2"
                                            placeholder="sitespeed.js"
+                                           name="ui_entrypoint"
                                            v-model='entrypoint'
                                            :class="{ 'is-invalid': errors?.entrypoint }"
-                                           >
-                                           <div class="invalid-feedback">[[ get_error_msg('entrypoint') ]]</div>
+                                        >
+                                        <div class="invalid-feedback">[[ get_error_msg('entrypoint') ]]</div>
+                                    </label>
                                 </div>
                             </div>
                             <div class="form-group mt-3">
