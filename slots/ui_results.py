@@ -10,12 +10,15 @@ class Slot:  # pylint: disable=E1101,R0903
         "permissions": ["performance.ui_performance_results"]
     })
     def content(self, context, slot, payload):
-        log.info('slot: [%s] || payload: [%s]', slot, payload)
-        log.info('payload request args: [%s]', payload.request.args)
         result_id = payload.request.args.get('result_id')
         if result_id:
             # test_data = context.rpc_manager.call.ui_results_or_404(result_id)
             test_data = self.results_or_404(result_id)
+            if not self.context.rpc_manager.call.admin_check_user_in_project(
+                    project_id=test_data['project_id'],
+                    user_id=payload.auth.id
+            ):
+                return theme.access_denied_part
 
             with context.app.app_context():
                 return self.descriptor.render_template(
@@ -26,8 +29,6 @@ class Slot:  # pylint: disable=E1101,R0903
 
     @web.slot('ui_results_scripts')
     def scripts(self, context, slot, payload):
-        from pylon.core.tools import log
-        log.info('slot: [%s], payload: %s', slot, payload)
         result_id = payload.request.args.get('result_id')
         source_data = {}
         if result_id:
@@ -42,8 +43,6 @@ class Slot:  # pylint: disable=E1101,R0903
 
     @web.slot('ui_results_styles')
     def styles(self, context, slot, payload):
-        from pylon.core.tools import log
-        log.info('slot: [%s], payload: %s', slot, payload)
         with context.app.app_context():
             return self.descriptor.render_template(
                 'results/styles.html',
