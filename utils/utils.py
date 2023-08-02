@@ -45,7 +45,7 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
     # resp['redirect'] = f'/task/{resp["task_id"]}/results'  # todo: where this should lead to?
 
     test.rpc.call.increment_statistics(test.project_id, 'ui_performance_test_runs')
-    test.rpc.call.create_test_statistics(report.to_json(), 'ui_performance')
+    test.event_manager.fire_event('usage_create_test_resource_usage', report.to_json())
     resp['result_id'] = report.id  # for test rerun
     return resp
 
