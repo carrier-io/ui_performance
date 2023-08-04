@@ -87,6 +87,9 @@ def parse_test_data(project_id: int, request_data: dict,
     if not rpc:
         rpc = rpc_tools.RpcMixin().rpc
 
+    if not request_data.get('integrations'):
+        request_data['integrations'] = {}
+
     common_kwargs = common_kwargs or dict()
     test_create_rpc_kwargs = test_create_rpc_kwargs or dict()
     errors = list()
