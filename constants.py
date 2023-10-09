@@ -4,7 +4,7 @@ RUNNER_MAPPING = {
     # 'Observer': f'getcarrier/observer:{c.CURRENT_RELEASE}',
     # 'Lighthouse': f'getcarrier/observer-lighthouse:{c.CURRENT_RELEASE}',
     'Lighthouse-Nodejs': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}',
-    'Lighthouse-NPM': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}-apline',
+    'Lighthouse-NPM': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}-alpine',
     'Sitespeed (browsertime)': f'getcarrier/observer-browsertime:{c.CURRENT_RELEASE}'
 }
 
