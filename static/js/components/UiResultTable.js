@@ -2,7 +2,6 @@ const UiResultTable = {
     props: ['url', 'selectedLoop'],
     data() {
         return {
-            dataTable: [],
             selectedType: 'all',
         }
     },
