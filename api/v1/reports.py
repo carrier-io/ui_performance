@@ -121,8 +121,14 @@ class API(Resource):
     })
     def put(self, project_id: int):
         args = request.json
-        report = UIReport.query.filter_by(project_id=project_id,
-                                          uid=args['report_id']).first_or_404()
+        try:
+            report_id = int(args.get("report_id"))
+            report = UIReport.query.filter_by(project_id=project_id,
+                                              id=args['report_id']).first_or_404()
+        except ValueError:
+            report = UIReport.query.filter_by(project_id=project_id,
+                                              uid=args['report_id']).first_or_404()
+
         report.is_active = False
         report.end_time = datetime.strptime(args["time"], '%Y-%m-%d %H:%M:%S')
         report.test_status = args["status"]
