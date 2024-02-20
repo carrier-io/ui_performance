@@ -14,7 +14,7 @@ const UiResult = {
     },
     computed: {
         isTestFinished() {
-            return ['finished', 'error', 'failed', 'success']
+            return ['finished', 'error', 'failed', 'success', 'cancelled']
                 .includes(this.test_data['test_status']['status'].toLowerCase())
         },
     },

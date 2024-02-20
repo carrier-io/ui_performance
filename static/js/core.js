@@ -848,17 +848,20 @@ const UiTestRunModal = {
         async handleError(response) {
             try {
                 const error_data = await response.json()
-                this.errors = error_data?.reduce((acc, item) => {
-                    const [errLoc, ...rest] = item.loc
-                    item.loc = rest
-                    if (acc[errLoc]) {
-                        acc[errLoc].push(item)
-                    } else {
-                        acc[errLoc] = [item]
-                    }
-                    return acc
-                }, {})
-
+                if (error_data !== null && 'error_type' in error_data && error_data.error_type === "limits") {
+                    showNotify('ERROR', error_data.message);
+                } else {
+                    this.errors = error_data?.reduce((acc, item) => {
+                        const [errLoc, ...rest] = item.loc
+                        item.loc = rest
+                        if (acc[errLoc]) {
+                            acc[errLoc].push(item)
+                        } else {
+                            acc[errLoc] = [item]
+                        }
+                        return acc
+                    }, {})
+                }
             } catch (e) {
                 alertCreateTest.add(e, 'danger-overlay', true, 5000)
             }
