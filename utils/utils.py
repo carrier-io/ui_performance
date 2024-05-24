@@ -119,6 +119,11 @@ def parse_test_data(project_id: int, request_data: dict,
         cloud_settings["memory_limit"] = common_params['env_vars']["memory_quota"]
         cloud_settings["concurrency"] = common_params['parallel_runners']
 
+        try:
+            cloud_settings["ec2_instance_type"] = common_params["env_vars"]["cloud_settings"]["ec2_instance_type"]
+        except:
+            cloud_settings["ec2_instance_type"] = "auto"
+
         request_data["integrations"]["clouds"] = {}
         request_data["integrations"]["clouds"][integration_name] = cloud_settings
 

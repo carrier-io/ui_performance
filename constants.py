@@ -5,8 +5,10 @@ RUNNER_MAPPING = {
     # 'Lighthouse': f'getcarrier/observer-lighthouse:{c.CURRENT_RELEASE}',
     'Lighthouse-Nodejs': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}',
     'Lighthouse-NPM': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}-alpine',
+    'Lighthouse-NPM_V11': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}-alpine_v11',
     'Sitespeed (browsertime)': f'getcarrier/observer-browsertime:{c.CURRENT_RELEASE}',
-    'Sitespeed (new version BETA)': f'getcarrier/observer-browsertime:{c.CURRENT_RELEASE}-33.0.0'
+    'Sitespeed (new entrypoint BETA)': f'getcarrier/observer-browsertime:test',
+    'Sitespeed (new version BETA)': f'getcarrier/observer-browsertime:latest-33.0.0'
 }
 
 if c.LOCAL_DEV:
