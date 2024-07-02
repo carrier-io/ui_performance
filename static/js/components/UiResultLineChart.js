@@ -48,6 +48,7 @@ const UiResultLineChart = {
                 })
                 dottedData.push({
                     borderDash: [10,5],
+                    borderColor: '#727272',
                     data,
                     label: `loop ${i}`
                 })
