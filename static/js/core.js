@@ -697,6 +697,16 @@ const UiTestRunModal = {
                             </div>
                         </div>
                         <div class="form-group">
+                            <p class="font-h5 font-semibold">Timeout</p>
+                            <p class="font-h6 font-weight-400">Timeout for test run in seconds, default is 5 hours (18000)</p>
+                            <div class="custom-input mb-3 mt-2 mr-3">
+                                <input type="text"
+                                    placeholder="Timeout, sec"
+                                    v-model='timeout'
+                                >
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <p class="font-h5 font-semibold">Custom CMD</p>
                             <p class="font-h6 font-weight-400">You may also add a command for test runner</p>
                             <div class="custom-input mb-3 mt-2 mr-3"
@@ -824,6 +834,7 @@ const UiTestRunModal = {
                     location: this.location
                 },
                 test_parameters: test_params,
+                timeout: this.timeout,
                 integrations: integrations,
                 loops: this.loops,
                 aggregation: this.aggregation

@@ -16,7 +16,8 @@ def test_parameter_value_by_name(test_parameters: List[dict], param_name: str) -
             return i['default']
 
 
-def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bool = False, engagement_id: str = None) -> dict:
+def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bool = False, engagement_id: str = None,
+             timeout: int = 18000) -> dict:
     event = test.configure_execution_json(execution=execution)
     if config_only:
         return event
@@ -58,7 +59,7 @@ def run_test(test: 'UIPerformanceTest', config_only: bool = False, execution: bo
     event["cc_env_vars"]["REPORT_ID"] = str(report.uid)
     event["cc_env_vars"]["test_duration_limit"] = str(test_duration_limit)
 
-    resp = TaskManager(test.project_id).run_task(event=[event], queue_name="__internal")
+    resp = TaskManager(test.project_id).run_task(event=[event], queue_name="__internal", timeout=timeout)
 
     test.rpc.call.increment_statistics(test.project_id, 'ui_performance_test_runs')
     test.event_manager.fire_event('usage_create_test_resource_usage', report.to_json())
