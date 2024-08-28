@@ -1,4 +1,4 @@
-from ...models.reports import UIReport
+from ...models.ui_report import UIReport
 from flask import request
 
 from tools import api_tools, LokiLogFetcher
