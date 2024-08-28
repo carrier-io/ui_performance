@@ -3,6 +3,7 @@ from tools import constants as c
 RUNNER_MAPPING = {
     # 'Observer': f'getcarrier/observer:{c.CURRENT_RELEASE}',
     # 'Lighthouse': f'getcarrier/observer-lighthouse:{c.CURRENT_RELEASE}',
+    'Lighthouse-NPM_V12': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}-alpine_v12',
     'Lighthouse-Nodejs': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}',
     'Lighthouse-NPM': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}-alpine',
     'Lighthouse-NPM_V11': f'getcarrier/observer-lighthouse-nodejs:{c.CURRENT_RELEASE}-alpine_v11',
