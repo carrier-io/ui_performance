@@ -4,6 +4,7 @@ const UiResult = {
         'ui-result-info': UiResultInfo,
         'ui-result-charts': UiResultCharts,
         'ui-result-table': UiResultTable,
+        'performance-logs-app': PerformanceLogsApp,
     },
     data() {
         return {
@@ -24,13 +25,14 @@ const UiResult = {
         },
         setLoops(loops) {
             this.loops = loops;
-        }
+        },
     },
     template: `
         <ui-result-info
             :loops="loops"
             @select-loop="changeLoop"
             :test_data="test_data">
+            <slot name='test_parameters_run'></slot>
         </ui-result-info>
         
         <ui-result-charts

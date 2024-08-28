@@ -6,13 +6,36 @@ const UiResultInfo = {
     data() {
         return {
             result_test_id: new URLSearchParams(location.search).get('result_id'),
+            tasksList: [],
+            selectedTask: null,
+            isLoadingRun: false,
         }
     },
     computed: {
         isTestFailed() {
             return !['finished', 'error', 'failed', 'success', 'cancelled']
                 .includes(this.test_data['test_status']['status'].toLowerCase())
-        }
+        },
+    },
+    mounted() {
+        ApiFetchTasks().then(data => {
+            this.tasksList = data.rows;
+        });
+        $('#RunTaskModal').on('show.bs.modal', () => {
+            this.$nextTick(() => {
+                $("#RunTaskModal_test_params").bootstrapTable('append', [{
+                    "name": "report_id",
+                    "default": this.result_test_id,
+                    "description": "",
+                    "type": "",
+                    "action": "",
+                }]);
+                $('#selectResult').selectpicker('refresh');
+            })
+        })
+        $('#RunTaskModal').on('hide.bs.modal', () => {
+            this.resetParams();
+        })
     },
     methods: {
         reRunTest () {
@@ -38,6 +61,28 @@ const UiResultInfo = {
             const date_obj = new Date(d)
             return isNaN(date_obj) ? '' : date_obj.toLocaleString()
         },
+        handleRunTask() {
+            this.isLoadingRun = true;
+            this.runTask().then(() => {
+                $('#RunTaskModal').modal('hide');
+                this.resetParams();
+            }).finally(() => {
+                this.isLoadingRun = false;
+            })
+        },
+        async runTask() {
+            const resp = await fetch(`/api/v1/tasks/run_task/default/${getSelectedProjectId()}/${this.selectedTask}`,{
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify($("#RunTaskModal_test_params").bootstrapTable('getData')),
+            })
+            return resp.json();
+        },
+        resetParams() {
+            $("#RunTaskModal_test_params").bootstrapTable('load', []);
+        }
     },
     template: `
         <div class="card card-12">
@@ -50,7 +95,10 @@ const UiResultInfo = {
                         <p class="font-h3 font-bold">{{ test_data["name"] }} (back) </p>
                     </div>
                     <div class="d-flex justify-content-end">
-                        <button class="btn btn-secondary" id="set_baseline"
+                        <button class="btn btn-secondary" data-toggle="modal" data-target="#RunTaskModal">
+                            Run task
+                        </button>
+                        <button class="btn btn-secondary ml-2" id="set_baseline"
                                 data-toggle="tooltip" data-placement="top" title="Set current report as baseline">
                             Set as baseline
                         </button>
@@ -188,6 +236,41 @@ const UiResultInfo = {
                            aria-selected="true">{{ loop }}</a>
                     </li>
                 </ul>
+            </div>
+        </div>
+        
+        <div class="modal fixed-left fade shadow-sm" tabindex="-1" role="dialog" id="RunTaskModal">
+            <div class="modal-dialog modal-dialog-aside" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="d-flex justify-content-between w-100">
+                            <p class="font-h3 font-weight-bold">Tasks</p>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn mr-2 btn-secondary" data-dismiss="modal" aria-label="Close">
+                                    Cancel
+                                </button>
+                                <button type="button" 
+                                    class="btn btn-basic d-flex align-items-center"
+                                    @click="handleRunTask"
+                                    >Run<i v-if="isLoadingRun" class="preview-loader__white"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="section">
+                            <div v-if="tasksList.length > 0">
+                                <p class="font-h5 font-bold">Select task for run:</p>
+                                <select id="selectResult"
+                                    v-model="selectedTask"
+                                    class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn">
+                                    <option v-for="(task, index) in tasksList" :key="index" :value="task.task_id">{{ task.task_name }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <slot></slot>
+                    </div>
+                </div>
             </div>
         </div>
     `
