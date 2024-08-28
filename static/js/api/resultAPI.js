@@ -36,3 +36,10 @@ const ApiDeletePreset = async (presetName) => {
         method: 'DELETE',
     })
 }
+
+const ApiFetchTasks = async () => {
+    const res = await fetch(`/api/v1/tasks/tasks/default/${getSelectedProjectId()}`, {
+        method: 'GET',
+    })
+    return res.json();
+}
