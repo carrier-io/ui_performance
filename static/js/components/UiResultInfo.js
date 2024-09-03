@@ -14,17 +14,20 @@ const UiResultInfo = {
     watch: {
         selectedTask(newVal, oldVal) {
             this.fetchParameters().then(data => {
+                let formattedParams = [];
                 if (data.rows) {
-                    $("#RunTaskModal_test_params").bootstrapTable('append', data.rows[0].task_parameters);
-                } else {
-                    $("#RunTaskModal_test_params").bootstrapTable('load', []).bootstrapTable('append', [{
-                        "name": "report_id",
-                        "default": this.result_test_id,
-                        "description": "",
-                        "type": "",
-                        "action": "",
-                    }]);
+                    const params = data.rows[0].task_parameters;
+                    formattedParams = params.filter(param => {
+                        if (param.name !== 'report_id') return param;
+                    });
                 }
+                $("#RunTaskModal_test_params").bootstrapTable('load', formattedParams).bootstrapTable('append', [{
+                    "name": "report_id",
+                    "default": this.result_test_id,
+                    "description": "",
+                    "type": "",
+                    "action": "",
+                }]);
             });
         }
     },
