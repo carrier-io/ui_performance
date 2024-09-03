@@ -26,6 +26,9 @@ const UiResult = {
         setLoops(loops) {
             this.loops = loops;
         },
+        testInProgress() {
+            return !['finished', 'error', 'failed', 'success', 'canceled'].includes(this.test_data['test_status']['status'].toLowerCase())
+        }
     },
     template: `
         <ui-result-info
@@ -34,7 +37,7 @@ const UiResult = {
             :test_data="test_data">
             <slot name='test_parameters_run'></slot>
         </ui-result-info>
-        
+
         <ui-result-charts
             v-if="isTestFinished"
             @set-loops="setLoops"
@@ -120,6 +123,15 @@ const UiResult = {
                 </tr>
             </template>
         </preset-table>
+      <div class="mb-3" v-if="testInProgress">
+        <performance-logs-app
+            @register="register"
+            instance_name="perf_logs"
+            :project_id="test_data.project_id"
+            :build_id="test_data.build_id"
+            :report_id="test_data.uid"
+        ></performance-logs-app>
+      </div>
     `
 }
 
