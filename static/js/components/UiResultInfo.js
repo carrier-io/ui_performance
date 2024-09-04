@@ -11,6 +11,26 @@ const UiResultInfo = {
             isLoadingRun: false,
         }
     },
+    watch: {
+        selectedTask(newVal, oldVal) {
+            this.fetchParameters().then(data => {
+                let formattedParams = [];
+                if (data.rows) {
+                    const params = data.rows[0].task_parameters;
+                    formattedParams = params.filter(param => {
+                        if (param.name !== 'report_id') return param;
+                    });
+                }
+                $("#RunTaskModal_test_params").bootstrapTable('load', formattedParams).bootstrapTable('append', [{
+                    "name": "report_id",
+                    "default": this.result_test_id,
+                    "description": "",
+                    "type": "",
+                    "action": "",
+                }]);
+            });
+        }
+    },
     computed: {
         isTestFailed() {
             return !['finished', 'error', 'failed', 'success', 'cancelled']
@@ -81,8 +101,17 @@ const UiResultInfo = {
             return resp.json();
         },
         resetParams() {
+            this.selectedTask = null;
+            $('#selectResult').selectpicker('val', null)
             $("#RunTaskModal_test_params").bootstrapTable('load', []);
-        }
+        },
+        async fetchParameters() {
+            const api_url = this.$root.build_api_url('tasks', 'tasks')
+            const res = await fetch (`${api_url}/${getSelectedProjectId()}/${this.selectedTask}?get_parameters=true`,{
+                method: 'GET',
+            })
+            return res.json();
+        },
     },
     template: `
         <div class="card card-12">
@@ -252,6 +281,7 @@ const UiResultInfo = {
                                 <button type="button" 
                                     class="btn btn-basic d-flex align-items-center"
                                     @click="handleRunTask"
+                                    :disabled="selectedTask === null"
                                     >Run<i v-if="isLoadingRun" class="preview-loader__white"></i>
                                 </button>
                             </div>
