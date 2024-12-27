@@ -18,6 +18,10 @@ const UiResult = {
             return ['finished', 'error', 'failed', 'success', 'cancelled']
                 .includes(this.test_data['test_status']['status'].toLowerCase())
         },
+        testInProgress() {
+            return !['finished', 'error', 'failed', 'success', 'canceled']
+                .includes(this.test_data['test_status']['status'].toLowerCase())
+        },
     },
     methods: {
         changeLoop(loop) {
@@ -26,9 +30,6 @@ const UiResult = {
         setLoops(loops) {
             this.loops = loops;
         },
-        testInProgress() {
-            return !['finished', 'error', 'failed', 'success', 'canceled'].includes(this.test_data['test_status']['status'].toLowerCase())
-        }
     },
     template: `
         <ui-result-info
