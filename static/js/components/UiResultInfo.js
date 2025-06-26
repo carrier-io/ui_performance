@@ -33,7 +33,7 @@ const UiResultInfo = {
     },
     computed: {
         isTestFailed() {
-            return !['finished', 'error', 'failed', 'success', 'cancelled']
+            return !['finished', 'error', 'failed', 'success', 'cancelled', 'canceled']
                 .includes(this.test_data['test_status']['status'].toLowerCase())
         },
     },
@@ -155,7 +155,7 @@ const UiResultInfo = {
                                 <i class="icon__18x18 icon-download"></i>
                         </button>
                         <button v-if="isTestFailed" 
-                                class="btn btn-painted ml-2"
+                                class="btn btn-painted ml-2" id="stop_test"
                                 style="--text-color:rgb(243, 38, 38); --brd-color:rgb(242, 180, 180);">
                             Stop test
                         </button>

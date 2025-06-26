@@ -31,4 +31,22 @@ $(document).on('vue_init', () => {
         resp.ok ? showNotify('SUCCESS', 'Baseline set') : showNotify('ERROR', 'Error settings baseline')
     }
     $('#set_baseline').on('click', setBaseline)
+
+    const stopTest = async () => {
+        console.log("Cancel test triggered")
+        let result_id = new URLSearchParams(location.search).get('result_id')
+        const resp = await fetch(`/api/v1/ui_performance/report_status/${getSelectedProjectId()}/${result_id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                "test_status": {
+                    "status": "Canceled",
+                    "percentage": 100,
+                    "description": "Test was canceled"
+                }
+            })
+        })
+        resp.ok ? location.reload() : console.warn('stop test failed', resp)
+    }
+    $('#stop_test').on('click', stopTest)
 })
