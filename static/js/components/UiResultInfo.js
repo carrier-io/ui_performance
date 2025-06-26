@@ -33,7 +33,7 @@ const UiResultInfo = {
     },
     computed: {
         isTestFailed() {
-            return !['finished', 'error', 'failed', 'success', 'cancelled']
+            return !['finished', 'error', 'failed', 'success', 'cancelled', 'canceled']
                 .includes(this.test_data['test_status']['status'].toLowerCase())
         },
     },
@@ -138,9 +138,9 @@ const UiResultInfo = {
                         <button class="btn btn-secondary btn-icon btn-icon__purple ml-2" id="show_config_btn"
                                 data-toggle="modal"
                                 data-target="#config_modal">
-                            <i data-toggle="tooltip" 
-                                data-placement="top" 
-                                title="Show config for current test run" 
+                            <i data-toggle="tooltip"
+                                data-placement="top"
+                                title="Show config for current test run"
                                 class="icon__18x18 icon-settings"></i>
                         </button>
                         <button class="btn btn-secondary btn-icon btn-icon__purple ml-2"
@@ -154,8 +154,8 @@ const UiResultInfo = {
                                 data-toggle="tooltip" data-placement="top" title="Download report">
                                 <i class="icon__18x18 icon-download"></i>
                         </button>
-                        <button v-if="isTestFailed" 
-                                class="btn btn-painted ml-2"
+                        <button v-if="isTestFailed"
+                                class="btn btn-painted ml-2" id="stop_test"
                                 style="--text-color:rgb(243, 38, 38); --brd-color:rgb(242, 180, 180);">
                             Stop test
                         </button>
@@ -267,7 +267,7 @@ const UiResultInfo = {
                 </ul>
             </div>
         </div>
-        
+
         <div class="modal fixed-left fade shadow-sm" tabindex="-1" role="dialog" id="RunTaskModal">
             <div class="modal-dialog modal-dialog-aside" role="document">
                 <div class="modal-content">
@@ -278,7 +278,7 @@ const UiResultInfo = {
                                 <button type="button" class="btn mr-2 btn-secondary" data-dismiss="modal" aria-label="Close">
                                     Cancel
                                 </button>
-                                <button type="button" 
+                                <button type="button"
                                     class="btn btn-basic d-flex align-items-center"
                                     @click="handleRunTask"
                                     :disabled="selectedTask === null"
