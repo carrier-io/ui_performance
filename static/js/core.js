@@ -88,8 +88,8 @@ var ui_test_formatters = {
         },
 
         "click .test_delete": function (e, value, row, index) {
-            console.log('test_delete', row)
-            ui_test_delete(row.id)
+            const modal = vueVm.registered_components.confirm_delete_ui_test;
+            modal.show([row.id], [row.name]);
         },
 
         "click .int_docker": async function (e, value, row, index) {
@@ -917,10 +917,11 @@ const ui_results_delete = ids => {
 
 $(document).on('vue_init', () => {
     $('#delete_tests').on('click', e => {
-        const ids_to_delete = vueVm.registered_components.table_tests?.table_action('getSelections').map(
-            item => item.id
-        ).join(',')
-        ids_to_delete && ui_test_delete(ids_to_delete)
+        const selected = vueVm.registered_components.table_tests?.table_action('getSelections');
+        if (!selected || selected.length === 0) return;
+        const ids = selected.map(item => item.id);
+        const names = selected.map(item => item.name);
+        vueVm.registered_components.confirm_delete_ui_test.show(ids, names);
     })
     $('#delete_results').on('click', e => {
         const ids_to_delete = vueVm.registered_components.table_results?.table_action('getSelections').map(
