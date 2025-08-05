@@ -357,19 +357,22 @@ var threshold_formatters = {
     action_events: {
         'click .action_edit': function (e, value, row, index) {
             const component_proxy = vueVm.registered_components.threshold_modal
-            // component_proxy.mode = 'update'
             component_proxy.set(row)
         },
         'click .action_delete': function (e, value, row, index) {
-            threshold_delete(row.id)
+            const modal = vueVm.registered_components.confirm_delete_ui_threshold;
+            modal.show([row.id], [row.test]);
         }
     }
 }
 
 $(() => {
     $('#delete_thresholds').on('click', () => {
-        const table_proxy = vueVm.registered_components.table_thresholds
-        const ids = table_proxy?.table_action('getSelections').map(i => i.id).join(',')
-        ids && threshold_delete(ids) && table_proxy?.table_action('refresh')
-    })
+        const table_proxy = vueVm.registered_components.table_thresholds;
+        const selected = table_proxy?.table_action('getSelections');
+        if (!selected || selected.length === 0) return;
+        const ids = selected.map(i => i.id);
+        const names = selected.map(i => i.test);
+        vueVm.registered_components.confirm_delete_ui_threshold.show(ids, names);
+    });
 })
