@@ -105,13 +105,16 @@ class RPC:
 
     @web.rpc('ui_performance_run_scheduled_test', 'run_scheduled_test')
     @rpc_tools.wrap_exceptions(RuntimeError)
-    def run_scheduled_test(self, test_id: int, test_params: list) -> dict:
+    def run_scheduled_test(self, test_id: int, test_params: list, run=True) -> dict:
         test = UIPerformanceTest.query.filter(UIPerformanceTest.id == test_id).one()
         test_params_schedule_pd = UITestParams(test_parameters=test_params)
         test_params_existing_pd = UITestParams.from_orm(test)
         test_params_existing_pd.update(test_params_schedule_pd)
         test.__dict__.update(test_params_existing_pd.dict())
-        return run_test(test)
+        if run:
+            return run_test(test)
+        else:
+            return {}
 
     @web.rpc('get_ui_results', 'get_ui_results')
     @rpc_tools.wrap_exceptions(RuntimeError)
