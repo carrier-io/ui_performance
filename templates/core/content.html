@@ -13,7 +13,8 @@
                         'data-page-size': 5,
                         'data-search': true,
                         'data-search-selector': '.custom-ui-tests-search',
-                        'id': 'ui_tests_table'
+                        'id': 'ui_tests_table',
+                        'data-side-pagination': 'client'
                     }"
                     container_classes="h-100"
             >
@@ -80,7 +81,8 @@
                 'data-url': '/api/v1/ui_performance/reports/{{ tools.session_project.get() }}',
                 'id': 'ui_results_table',
                 'data-search': true,
-                'data-search-selector': '.custom-ui-report-search'
+                'data-search-selector': '.custom-ui-report-search',
+                'data-side-pagination': 'client'
             }"
             container_classes="mt-3"
     >
