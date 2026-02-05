@@ -2,6 +2,7 @@ const UiResultInfo = {
     props: ['test_data', 'loops'],
     components: {
         'uiperformancetestprogress': UIPerformanceTestProgress,
+        'UIResultTagsModal': UIResultTagsModal
     },
     data() {
         return {
@@ -9,7 +10,21 @@ const UiResultInfo = {
             tasksList: [],
             selectedTask: null,
             isLoadingRun: false,
+            existedTags: [],
+            servicesTags: [],
+            isLoading: false,
+            isDataLoaded: false,
+            isUpdatedTags: false,
         }
+    },
+    computed: {
+        buttonsTag() {
+            return this.existedTags.filter(tag => tag.selected)
+        },
+        isTestFailed() {
+            return !['finished', 'error', 'failed', 'success', 'cancelled', 'canceled']
+                .includes(this.test_data['test_status']['status'].toLowerCase())
+        },
     },
     watch: {
         selectedTask(newVal, oldVal) {
@@ -31,12 +46,6 @@ const UiResultInfo = {
             });
         }
     },
-    computed: {
-        isTestFailed() {
-            return !['finished', 'error', 'failed', 'success', 'cancelled', 'canceled']
-                .includes(this.test_data['test_status']['status'].toLowerCase())
-        },
-    },
     mounted() {
         ApiFetchTasks().then(data => {
             this.tasksList = data.rows;
@@ -56,6 +65,7 @@ const UiResultInfo = {
         $('#RunTaskModal').on('hide.bs.modal', () => {
             this.resetParams();
         })
+        this.fetchTags();
     },
     methods: {
         reRunTest () {
@@ -112,196 +122,273 @@ const UiResultInfo = {
             })
             return res.json();
         },
+        fetchTags() {
+            this.isUpdatedTags = false;
+            this.fetchTagsAPI().then(({ tags }) => {
+                this.existedTags = tags.map(tag => {
+                    const obj = {
+                        title: tag.title,
+                        hex: tag.hex,
+                    }
+                    if (tag.is_selected) {
+                        obj.selected = 'selected'
+                    }
+                    return obj;
+
+                });
+                this.fetchServiceTagsAPI().then(res => {
+                    this.servicesTags = res['service tags'];
+                    this.isDataLoaded = true;
+                })
+            })
+        },
+        updateTags(selectedTags) {
+            this.updateTagsAPI(selectedTags)
+        },
+        async fetchTagsAPI () {
+            const res = await fetch(`/api/v1/ui_performance/tags/${getSelectedProjectId()}?report_id[]=${this.test_data.id}`, {
+                method: 'GET',
+            })
+            return res.json();
+        },
+        async fetchServiceTagsAPI () {
+            const res = await fetch(`/api/v1/ui_performance/tags/${getSelectedProjectId()}`, {
+                method: 'GET',
+            })
+            return res.json();
+        },
+        updateTagsAPI(newTags) {
+            this.isLoading = true;
+            fetch(`/api/v1/ui_performance/tags/${getSelectedProjectId()}/${this.test_data.id}`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ tags: newTags })
+            }).then(() => {
+                this.isLoading = false;
+                $('#uiTagsModal').modal('hide');
+                this.isUpdatedTags = true;
+                this.isDataLoaded = false;
+                this.$nextTick(() => {
+                    this.fetchTags();
+                })
+            })
+        },
     },
     template: `
         <div class="card card-12">
-            <div class="p-28 pb-20">
-                <div class="d-flex justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <a id="back-button" class="mr-2" @click="() => window.history.back()">
-                            <i class="icon__16x16 icon-arrow-left-bold__16"></i>
-                        </a>
-                        <p class="font-h3 font-bold">{{ test_data["name"] }} (back) </p>
-                    </div>
-                    <div class="d-flex justify-content-end">
-                        <button class="btn btn-secondary" data-toggle="modal" data-target="#RunTaskModal">
-                            Run task
-                        </button>
-                        <button class="btn btn-secondary ml-2" id="set_baseline"
-                                data-toggle="tooltip" data-placement="top" title="Set current report as baseline">
-                            Set as baseline
-                        </button>
-                        <button hidden class="btn btn-secondary ml-2" id="not_worse_than"
-                                data-toggle="tooltip" data-placement="top" title="Set current report as thresholds">
-                            Set as threshold
-                        </button>
-                        <button class="btn btn-secondary btn-icon btn-icon__purple ml-2" id="show_config_btn"
-                                data-toggle="modal"
-                                data-target="#config_modal">
-                            <i data-toggle="tooltip"
-                                data-placement="top"
-                                title="Show config for current test run"
-                                class="icon__18x18 icon-settings"></i>
-                        </button>
-                        <button class="btn btn-secondary btn-icon btn-icon__purple ml-2"
-                                @click="reRunTest"
-                                data-toggle="tooltip"
-                                data-placement="top"
-                                title="Rerun Test">
-                            <i class="icon__18x18 icon-run"></i>
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-icon btn-icon__purple ml-2"
-                                data-toggle="tooltip" data-placement="top" title="Download report">
-                                <i class="icon__18x18 icon-download"></i>
-                        </button>
-                        <button v-if="isTestFailed"
-                                class="btn btn-painted ml-2" id="stop_test"
-                                style="--text-color:rgb(243, 38, 38); --brd-color:rgb(242, 180, 180);">
-                            Stop test
-                        </button>
-                    </div>
-                </div>
-                <div id="progressbar-body">
-                    <uiperformancetestprogress
-                        v-if="isTestFailed"
-                        :test_status="test_data.test_status"
-                        :project_id="test_data.project_id"
-                        :test_id="test_data.id"
-                    ></uiperformancetestprogress>
-                </div>
-                <div id="ui-small-cards" class="mt-24">
-                    <div class="d-grid grid-column-5 gap-3">
-                        <div class="card card-sm card-blue">
-                            <div class="card-header">{{ test_data["total_pages"] }}</div>
-                            <div class="card-body">Total pages</div>
-                        </div>
-                        <div class="card card-sm card-blue">
-                            <div class="card-header">{{ test_data["avg_page_load"] }} sec</div>
-                            <div class="card-body">AVG PAGE LOAD</div>
-                        </div>
-                        <div class="card card-sm card-blue">
-                            <div class="card-header">{{ test_data["thresholds_missed"] }} %</div>
-                            <div class="card-body">MISSED THRESHOLDS RATE</div>
-                        </div>
-                        <div class="card card-sm card-blue">
-                            <div class="card-header">{{ test_data["loops"] }}</div>
-                            <div class="card-body">LOOPS</div>
-                        </div>
-                        <div class="card card-sm card-blue">
-                            <div class="card-header">{{ test_data["aggregation"] }}</div>
-                            <div class="card-body">AGGREGATION</div>
-                        </div>
-                    </div>
-                    <div class="row" id="processing-table">
-                        <div class="col">
-                            <div class="card card-sm-table">
-                                <div class="card-body d-flex justify-content-between">
-                                    <table>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">Status</td>
-                                            <td class="font-h5">{{ test_data['test_status']['status'] }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">DURATION</td>
-                                            <td class="font-h5">{{ test_data["duration"] }}s</td>
-                                        </tr>
-                                    </table>
-                                    <table>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">STARTED</td>
-                                            <td class="font-h5" id="start_time">{{ format_date(test_data.start_time) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">ENDED</td>
-                                            <td class="font-h5" id="end_time font-h5">{{ format_date(test_data.end_time) }}</td>
-                                        </tr>
-                                    </table>
-                                    <table>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">Environment</td>
-                                            <td class="font-h5">{{ test_data["environment"] }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">Test type</td>
-                                            <td class="font-h5">{{ test_data["test_type"] }}</td>
-                                        </tr>
-                                    </table>
-                                    <table>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">Browser config</td>
-                                            <td class="font-h5">{{ test_data["browser"] }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-gray-500 font-h6 font-semibold">Tags</td>
-                                            <td>
-                                                <span v-for="tag in test_data['tags']" class="badge badge-primary">{{ tag }}</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                    <div style="width: 100px"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="p-28 pb-20">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex align-items-center">
+                <a id="back-button" class="mr-2" @click="() => window.history.back()">
+                    <i class="icon__16x16 icon-arrow-left-bold__16"></i>
+                </a>
+                <p class="font-h3 font-bold">{{ test_data["name"] }} (back) </p>
             </div>
-
-            <hr class="my-0">
-            <div class="p-28 pt-20">
-                <p class="text-gray-500 font-h6 font-semibold float-left pt-1 mr-4">LOOPS</p>
-                <ul class="custom-tabs nav nav-pills">
-                    <li class="nav-item">
-                        <a class="active"
-                           data-toggle="pill"
-                           href="#"
-                           @click="$emit('select-loop', 'all')"
-                           aria-selected="true">ALL</a>
-                    </li>
-                    <li v-for="loop in loops" class="nav-item">
-                        <a class=""
-                           data-toggle="pill"
-                           href="#"
-                           @click="$emit('select-loop', loop)"
-                           aria-selected="true">{{ loop }}</a>
-                    </li>
-                </ul>
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-secondary" data-toggle="modal" data-target="#RunTaskModal">
+                    Run task
+                </button>
+                <button class="btn btn-secondary ml-2" id="set_baseline"
+                        data-toggle="tooltip" data-placement="top" title="Set current report as baseline">
+                    Set as baseline
+                </button>
+                <button hidden class="btn btn-secondary ml-2" id="not_worse_than"
+                        data-toggle="tooltip" data-placement="top" title="Set current report as thresholds">
+                    Set as threshold
+                </button>
+                <button class="btn btn-secondary btn-icon btn-icon__purple ml-2" id="show_config_btn"
+                        data-toggle="modal"
+                        data-target="#config_modal">
+                    <i data-toggle="tooltip"
+                       data-placement="top"
+                       title="Show config for current test run"
+                       class="icon__18x18 icon-settings"></i>
+                </button>
+                <button class="btn btn-secondary btn-icon btn-icon__purple ml-2"
+                        @click="reRunTest"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title="Rerun Test">
+                    <i class="icon__18x18 icon-run"></i>
+                </button>
+                <button type="button" class="btn btn-secondary btn-icon btn-icon__purple ml-2"
+                        data-toggle="tooltip" data-placement="top" title="Download report">
+                    <i class="icon__18x18 icon-download"></i>
+                </button>
+                <button v-if="isTestFailed"
+                        class="btn btn-painted ml-2" id="stop_test"
+                        style="--text-color:rgb(243, 38, 38); --brd-color:rgb(242, 180, 180);">
+                    Stop test
+                </button>
             </div>
         </div>
-
-        <div class="modal fixed-left fade shadow-sm" tabindex="-1" role="dialog" id="RunTaskModal">
-            <div class="modal-dialog modal-dialog-aside" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="d-flex justify-content-between w-100">
-                            <p class="font-h3 font-weight-bold">Tasks</p>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn mr-2 btn-secondary" data-dismiss="modal" aria-label="Close">
-                                    Cancel
-                                </button>
-                                <button type="button"
-                                    class="btn btn-basic d-flex align-items-center"
-                                    @click="handleRunTask"
-                                    :disabled="selectedTask === null"
-                                    >Run<i v-if="isLoadingRun" class="preview-loader__white"></i>
-                                </button>
-                            </div>
+        <div id="progressbar-body">
+            <uiperformancetestprogress
+                    v-if="isTestFailed"
+                    :test_status="test_data.test_status"
+                    :project_id="test_data.project_id"
+                    :test_id="test_data.id"
+            ></uiperformancetestprogress>
+        </div>
+        <div id="ui-small-cards" class="mt-24">
+            <div class="d-grid grid-column-5 gap-3">
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["total_pages"] }}</div>
+                    <div class="card-body">Total pages</div>
+                </div>
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["avg_page_load"] }} sec</div>
+                    <div class="card-body">AVG PAGE LOAD</div>
+                </div>
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["thresholds_missed"] }} %</div>
+                    <div class="card-body">MISSED THRESHOLDS RATE</div>
+                </div>
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["loops"] }}</div>
+                    <div class="card-body">LOOPS</div>
+                </div>
+                <div class="card card-sm card-blue">
+                    <div class="card-header">{{ test_data["aggregation"] }}</div>
+                    <div class="card-body">AGGREGATION</div>
+                </div>
+            </div>
+            <div class="row" id="processing-table">
+                <div class="col">
+                    <div class="card card-sm-table">
+                        <div class="card-body d-flex justify-content-between">
+                            <table>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">Status</td>
+                                    <td class="font-h5">{{ test_data['test_status']['status'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">DURATION</td>
+                                    <td class="font-h5">{{ test_data["duration"] }}s</td>
+                                </tr>
+                            </table>
+                            <table>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">STARTED</td>
+                                    <td class="font-h5" id="start_time">{{ format_date(test_data.start_time) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">ENDED</td>
+                                    <td class="font-h5" id="end_time font-h5">{{ format_date(test_data.end_time) }}</td>
+                                </tr>
+                            </table>
+                            <table>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">Environment</td>
+                                    <td class="font-h5">{{ test_data["environment"] }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">Test type</td>
+                                    <td class="font-h5">{{ test_data["test_type"] }}</td>
+                                </tr>
+                            </table>
+                            <table>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">Browser config</td>
+                                    <td class="font-h5">{{ test_data["browser"] }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-500 font-h6 font-semibold">Tags</td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1" style="max-width: 258px">
+                                            <button v-for="tag in buttonsTag"
+                                                    class="btn btn-xs btn-painted rounded-pill"
+                                                    :style="{ '--text-color': tag.hex, '--brd-color': tag.hex }">{{
+                                                tag.title }}
+                                            </button>
+                                            <button type="button" class="btn btn-default btn-xs btn-icon__xs mr-2"
+                                                    data-toggle="modal" data-target="#uiTagsModal">
+                                                <i class="icon__18x18 icon-edit" data-toggle="tooltip"
+                                                   data-placement="top" title="Edit tags"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="width: 100px"></div>
                         </div>
-                    </div>
-                    <div class="modal-body">
-                        <div class="section">
-                            <div v-if="tasksList.length > 0">
-                                <p class="font-h5 font-bold">Select task for run:</p>
-                                <select id="selectResult"
-                                    v-model="selectedTask"
-                                    class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn">
-                                    <option v-for="(task, index) in tasksList" :key="index" :value="task.task_id">{{ task.task_name }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <slot></slot>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <hr class="my-0">
+    <div class="p-28 pt-20">
+        <p class="text-gray-500 font-h6 font-semibold float-left pt-1 mr-4">LOOPS</p>
+        <ul class="custom-tabs nav nav-pills">
+            <li class="nav-item">
+                <a class="active"
+                   data-toggle="pill"
+                   href="#"
+                   @click="$emit('select-loop', 'all')"
+                   aria-selected="true">ALL</a>
+            </li>
+            <li v-for="loop in loops" class="nav-item">
+                <a class=""
+                   data-toggle="pill"
+                   href="#"
+                   @click="$emit('select-loop', loop)"
+                   aria-selected="true">{{ loop }}</a>
+            </li>
+        </ul>
+    </div>
+    <UIResultTagsModal
+            :existed-tags="existedTags"
+            :services-tags="servicesTags"
+            :is-loading="isLoading"
+            :is-data-loaded="isDataLoaded"
+            :key="isUpdatedTags"
+            @update-tags="updateTags"
+    >
+    </UIResultTagsModal>
+</div>
+
+<div class="modal fixed-left fade shadow-sm" tabindex="-1" role="dialog" id="RunTaskModal">
+    <div class="modal-dialog modal-dialog-aside" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex justify-content-between w-100">
+                    <p class="font-h3 font-weight-bold">Tasks</p>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn mr-2 btn-secondary" data-dismiss="modal" aria-label="Close">
+                            Cancel
+                        </button>
+                        <button type="button"
+                                class="btn btn-basic d-flex align-items-center"
+                                @click="handleRunTask"
+                                :disabled="selectedTask === null"
+                        >Run<i v-if="isLoadingRun" class="preview-loader__white"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="section">
+                    <div v-if="tasksList.length > 0">
+                        <p class="font-h5 font-bold">Select task for run:</p>
+                        <select id="selectResult"
+                                v-model="selectedTask"
+                                class="selectpicker bootstrap-select__b displacement-ml-4" data-style="btn">
+                            <option v-for="(task, index) in tasksList" :key="index" :value="task.task_id">{{
+                                task.task_name }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <slot></slot>
+            </div>
+        </div>
+    </div>
+</div>
     `
 }
+
+register_component('UiResultInfo', UiResultInfo)
