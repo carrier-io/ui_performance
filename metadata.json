@@ -1,6 +1,23 @@
 {
   "name": "Carrier UI Tests RestAPI Plugin",
-  "version": "0.1",
+  "version": "0.2",
   "depends_on": ["shared", "projects", "tasks", "theme"],
-  "init_after": ["integrations"]
+  "init_after": ["integrations"],
+  "changelog": {
+    "0.2": {
+      "added": [
+        "Color-coded tag management system for UI performance reports",
+        "Tags API endpoints (GET, POST, PUT, DELETE) for tag CRUD operations",
+        "UIResultTagsModal component with color picker and multi-select input",
+        "Tags display on report detail pages with edit functionality",
+        "Tags column in reports table with colored badges",
+        "Service tag protection (baseline) and duplicate prevention",
+        "Multi-tenant schema isolation for all tag operations"
+      ],
+      "changed": [
+        "UIReport model: tags field changed from ARRAY(String) to JSON format",
+        "Tags now support custom colors with hex values"
+      ]
+    }
+  }
 }

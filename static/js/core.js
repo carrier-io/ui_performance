@@ -137,6 +137,20 @@ var ui_report_formatters = {
     },
     date_formatter(value) {
         return new Date(value).toLocaleString()
+    },
+    tagsFormatter(value, row, index) {
+        if (!value || !Array.isArray(value) || value.length === 0) {
+            return '<span class="text-gray-500">—</span>';
+        }
+        const tagsHtml = value.map(tag => {
+            const title = tag.title || '';
+            const hex = tag.hex || '#5933c6';
+            return `<button class="btn btn-xs btn-painted rounded-pill mr-1 mb-1"
+                style="--text-color: ${hex}; --brd-color: ${hex}; pointer-events: none;">
+                ${title}
+            </button>`;
+        }).join('');
+        return `<div class="d-flex flex-wrap" style="gap: 4px;">${tagsHtml}</div>`;
     }
 }
 

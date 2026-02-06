@@ -2,6 +2,7 @@ const UiResultInfo = {
     props: ['test_data', 'loops'],
     components: {
         'uiperformancetestprogress': UIPerformanceTestProgress,
+        'ui-result-tags-modal': UIResultTagsModal,
     },
     data() {
         return {
@@ -9,6 +10,11 @@ const UiResultInfo = {
             tasksList: [],
             selectedTask: null,
             isLoadingRun: false,
+            reportTags: [],
+            existedTags: [],
+            servicesTags: ['baseline'],
+            isLoadingTags: false,
+            isTagsDataLoaded: false,
         }
     },
     watch: {
@@ -56,6 +62,8 @@ const UiResultInfo = {
         $('#RunTaskModal').on('hide.bs.modal', () => {
             this.resetParams();
         })
+        this.loadExistedTags();
+        this.reportTags = this.test_data.tags || [];
     },
     methods: {
         reRunTest () {
@@ -111,6 +119,47 @@ const UiResultInfo = {
                 method: 'GET',
             })
             return res.json();
+        },
+        async loadExistedTags() {
+            try {
+                const projectId = this.test_data.project_id;
+                const reportId = this.test_data.id;
+                const url = `/api/v1/ui_performance/${projectId}/tags?report_id[]=${reportId}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                this.existedTags = data.tags || [];
+                this.isTagsDataLoaded = true;
+            } catch (error) {
+                console.error('Error loading tags:', error);
+                this.isTagsDataLoaded = true;
+            }
+        },
+        async updateTags(selectedTags) {
+            this.isLoadingTags = true;
+            try {
+                const projectId = this.test_data.project_id;
+                const reportId = this.test_data.id;
+                const url = `/api/v1/ui_performance/${projectId}/${reportId}/tags`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({tags: selectedTags})
+                });
+                if (response.ok) {
+                    showNotify('SUCCESS', 'Tags updated successfully');
+                    this.reportTags = selectedTags;
+                    this.test_data.tags = selectedTags;
+                    $('#uiTagsModal').modal('hide');
+                } else {
+                    const data = await response.json();
+                    showNotify('ERROR', data.message || 'Error updating tags');
+                }
+            } catch (error) {
+                console.error('Error updating tags:', error);
+                showNotify('ERROR', 'Error updating tags');
+            } finally {
+                this.isLoadingTags = false;
+            }
         },
     },
     template: `
@@ -233,8 +282,19 @@ const UiResultInfo = {
                                         </tr>
                                         <tr>
                                             <td class="text-gray-500 font-h6 font-semibold">Tags</td>
-                                            <td>
-                                                <span v-for="tag in test_data['tags']" class="badge badge-primary">{{ tag }}</span>
+                                            <td class="d-flex flex-wrap gap-1">
+                                                <button v-for="tag in reportTags"
+                                                    :key="tag.title"
+                                                    class="btn btn-xs btn-painted rounded-pill"
+                                                    :style="{ '--text-color': tag.hex, '--brd-color': tag.hex }">
+                                                    {{ tag.title }}
+                                                </button>
+                                                <button type="button"
+                                                    class="btn btn-default btn-xs btn-icon__xs"
+                                                    data-toggle="modal"
+                                                    data-target="#uiTagsModal">
+                                                    <i class="icon__18x18 icon-edit"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     </table>
@@ -303,5 +363,13 @@ const UiResultInfo = {
                 </div>
             </div>
         </div>
+
+        <ui-result-tags-modal
+            :existed-tags="existedTags"
+            :services-tags="servicesTags"
+            :is-loading="isLoadingTags"
+            :is-data-loaded="isTagsDataLoaded"
+            @update-tags="updateTags">
+        </ui-result-tags-modal>
     `
 }

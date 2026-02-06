@@ -49,7 +49,7 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
     time_to_first_paint = Column(JSON, unique=False, nullable=True)
     load_time = Column(JSON, unique=False, nullable=True)
     total_blocking_time = Column(JSON, unique=False, nullable=True)
-    tags = Column(ARRAY(String), default=[])
+    tags = Column(JSON, unique=False, default=[])
 
     #engagement id
     engagement = Column(String(64), nullable=True, default=None)
@@ -83,4 +83,31 @@ class UIReport(db_tools.AbstractBaseMixin, db.Base, rpc_tools.RpcMixin):
             cls.project_id == project_id,
             cls.uid == test_id
         )
+
+    def add_tags(self, tags_to_add: list) -> list:
+        """Add new tags without duplicates (case-insensitive)"""
+        tags = list(self.tags) if self.tags else []
+        tag_titles = [tag['title'].lower() for tag in tags]
+        added_tags = []
+        for new_tag in tags_to_add:
+            if new_tag['title'].lower() not in tag_titles:
+                tags.append(new_tag)
+                added_tags.append(new_tag['title'])
+        self.tags = tags
+        self.commit()
+        return added_tags
+
+    def delete_tags(self, tags_to_delete: list) -> set:
+        """Remove tags by title (case-insensitive)"""
+        tags = list(self.tags) if self.tags else []
+        common_tags = set(tag.lower() for tag in tags_to_delete) & \
+                      set(tag['title'].lower() for tag in tags)
+        self.tags = [tag for tag in tags if tag['title'].lower() not in common_tags]
+        self.commit()
+        return common_tags
+
+    def replace_tags(self, tags: list):
+        """Replace all tags with new list"""
+        self.tags = tags
+        self.commit()
 
