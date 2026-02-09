@@ -9,8 +9,8 @@ const QualityGate = {
     methods: {
         get_data() {
             if (this.is_selected) {
-                const {degradation_rate, missed_thresholds} = this
-                return {degradation_rate, missed_thresholds}
+                const {deviation, missed_thresholds, baseline_deviation} = this
+                return {deviation, missed_thresholds, baseline_deviation}
             }
         },
         set_data(data) {
@@ -33,32 +33,51 @@ const QualityGate = {
             this.errors = {}
         },
         initialState: () => ({
-            degradation_rate: 20,
-            missed_thresholds : 50,
+            deviation: 20,
+            missed_thresholds: 50,
+            baseline_deviation: -1,
             errors: {},
         })
     },
     template: `
     <div class="row">
-        <div class="d-flex gap-3" 
+        <div class="d-flex gap-3 flex-wrap"
             ref="settings"
         >
-            <div>
-                <p class="font-h6 font-semibold">Degradation rate, %</p>
-                <input type="number" class="form-control mt-1" placeholder="Degradation rate"
-                    v-model="degradation_rate"
-                    :class="{ 'is-invalid': errors.degradation_rate }"
+            <div class="flex-grow-1" style="min-width: 250px;">
+                <p class="font-h6 font-semibold mb-1">Deviation, %</p>
+                <input type="number" class="form-control" placeholder="Deviation"
+                    v-model="deviation"
+                    :class="{ 'is-invalid': errors.deviation }"
                 >
-                <div class="invalid-feedback">[[ errors.degradation_rate ]]</div>
+                <small class="form-text text-muted">
+                    Acceptable deviation in test results, used for comparison with thresholds and baseline. Set to -1 to disable.
+                </small>
+                <div class="invalid-feedback">[[ errors.deviation ]]</div>
             </div>
-            
-            <div>
-                <p class="font-h6 font-semibold">Missed thresholds, %</p>
-                <input type="number" class="form-control mt-1" placeholder="Missed thresholds"
+
+            <div class="flex-grow-1" style="min-width: 250px;">
+                <p class="font-h6 font-semibold mb-1">Missed thresholds, %</p>
+                <input type="number" class="form-control" placeholder="Missed thresholds"
                     v-model="missed_thresholds"
                     :class="{ 'is-invalid': errors.missed_thresholds }"
                 >
+                <small class="form-text text-muted">
+                    Maximum percentage of thresholds that can fail. Set to -1 to disable.
+                </small>
                 <div class="invalid-feedback">[[ errors.missed_thresholds ]]</div>
+            </div>
+
+            <div class="flex-grow-1" style="min-width: 250px;">
+                <p class="font-h6 font-semibold mb-1">Baseline Deviation, %</p>
+                <input type="number" class="form-control" placeholder="Baseline deviation"
+                    v-model="baseline_deviation"
+                    :class="{ 'is-invalid': errors.baseline_deviation }"
+                >
+                <small class="form-text text-muted">
+                    Maximum performance degradation from baseline. Test fails if metrics exceed this percentage. Set to -1 to disable.
+                </small>
+                <div class="invalid-feedback">[[ errors.baseline_deviation ]]</div>
             </div>
         </div>
     </div>
