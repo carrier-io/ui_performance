@@ -17,3 +17,40 @@
 	color: var(--purple);
 }
 
+/* Tag badges styling */
+.btn-painted {
+	border: 1px solid var(--brd-color, #5933c6);
+	color: var(--text-color, #5933c6);
+	background: transparent;
+	font-weight: 500;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 200px;
+	transition: all 0.2s ease;
+}
+
+.btn-painted:hover {
+	background: var(--brd-color, #5933c6);
+	color: white;
+	opacity: 0.9;
+}
+
+.rounded-pill {
+	border-radius: 50rem !important;
+}
+
+/* Tag display in tables */
+.table td .btn-painted {
+	margin-right: 4px;
+	margin-bottom: 4px;
+	padding: 2px 12px;
+	font-size: 12px;
+}
+
+/* Tags edit button */
+.btn-icon__xs {
+	padding: 4px 8px;
+	min-width: auto;
+}
+
