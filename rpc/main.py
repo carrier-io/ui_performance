@@ -77,6 +77,180 @@ class RPC:
         # but rpc needs to exist
         return integration_data
 
+    @web.rpc('ui_performance_evaluate_quality_gate')
+    @rpc_tools.wrap_exceptions(RuntimeError)
+    def evaluate_quality_gate(self, project_id: int, report_id: int, quality_gate_config: dict) -> dict:
+        """
+        Evaluate Quality Gate criteria for a test report.
+
+        Args:
+            project_id: Project ID
+            report_id: Current test report ID
+            quality_gate_config: Quality Gate configuration dict
+
+        Returns:
+            dict: Evaluation result with pass/fail status and details
+        """
+        from ..models.ui_baseline import UIBaseline
+
+        # Load current report
+        report = UIReport.query.get(report_id)
+        if not report:
+            raise RuntimeError(f"Report {report_id} not found")
+
+        result = {
+            "passed": True,
+            "failed_criteria": [],
+            "details": {}
+        }
+
+        # Evaluate missed_thresholds
+        if quality_gate_config.get("missed_thresholds", -1) != -1:
+            threshold = quality_gate_config["missed_thresholds"]
+            try:
+                actual = round(report.thresholds_failed / report.thresholds_total * 100, 2)
+            except ZeroDivisionError:
+                actual = 0
+
+            passed = actual <= threshold
+            result["details"]["missed_thresholds"] = {
+                "passed": passed,
+                "configured": True,
+                "value": actual,
+                "threshold": threshold
+            }
+            if not passed:
+                result["passed"] = False
+                result["failed_criteria"].append("missed_thresholds")
+        else:
+            result["details"]["missed_thresholds"] = {"configured": False, "passed": True}
+
+        # Evaluate baseline_deviation
+        if quality_gate_config.get("baseline_deviation", -1) != -1:
+            threshold = quality_gate_config["baseline_deviation"]
+
+            # Fetch baseline
+            baseline = UIBaseline.query.filter_by(
+                project_id=project_id,
+                test=report.name,
+                environment=report.environment
+            ).first()
+
+            if baseline:
+                baseline_report = UIReport.query.get(baseline.report_id)
+                if baseline_report:
+                    comparison_result = self._compare_with_baseline(
+                        report, baseline_report, threshold
+                    )
+                    result["details"]["baseline_deviation"] = comparison_result
+                    if not comparison_result["passed"]:
+                        result["passed"] = False
+                        result["failed_criteria"].append("baseline_deviation")
+                else:
+                    # Baseline report not found
+                    log.warning(f"Baseline report {baseline.report_id} not found for test '{report.name}' in '{report.environment}'")
+                    result["details"]["baseline_deviation"] = {
+                        "passed": True,
+                        "configured": True,
+                        "baseline_available": False,
+                        "metrics_failed": [],
+                        "metrics_checked": [],
+                        "threshold": threshold,
+                        "max_deviation": None
+                    }
+            else:
+                # No baseline available - pass with warning
+                log.warning(f"Baseline deviation check skipped - no baseline for test '{report.name}' in '{report.environment}'")
+                result["details"]["baseline_deviation"] = {
+                    "passed": True,
+                    "configured": True,
+                    "baseline_available": False,
+                    "metrics_failed": [],
+                    "metrics_checked": [],
+                    "threshold": threshold,
+                    "max_deviation": None
+                }
+        else:
+            result["details"]["baseline_deviation"] = {"configured": False, "passed": True}
+
+        # Deviation check (placeholder - not computed yet in current implementation)
+        if quality_gate_config.get("deviation", -1) != -1:
+            result["details"]["deviation"] = {
+                "passed": True,
+                "configured": True,
+                "value": None,  # Not yet implemented
+                "threshold": quality_gate_config["deviation"]
+            }
+        else:
+            result["details"]["deviation"] = {"configured": False, "passed": True}
+
+        return result
+
+    def _compare_with_baseline(self, current_report, baseline_report, threshold):
+        """Compare current report metrics against baseline."""
+        METRICS = [
+            'load_time', 'dom_processing', 'time_to_interactive',
+            'first_contentful_paint', 'largest_contentful_paint',
+            'total_blocking_time',
+            'first_visual_change', 'last_visual_change'
+        ]
+
+        failed_metrics = []
+        max_deviation = 0
+
+        # Extract metrics from reports
+        current_metrics = self._extract_metrics(current_report)
+        baseline_metrics = self._extract_metrics(baseline_report)
+
+        for metric in METRICS:
+            current_val = current_metrics.get(metric)
+            baseline_val = baseline_metrics.get(metric)
+
+            if current_val is None or baseline_val is None or baseline_val == 0:
+                continue
+
+            deviation_pct = ((current_val - baseline_val) / baseline_val) * 100
+
+            if deviation_pct > threshold:
+                failed_metrics.append(metric)
+                max_deviation = max(max_deviation, deviation_pct)
+
+        return {
+            "passed": len(failed_metrics) == 0,
+            "configured": True,
+            "baseline_available": True,
+            "metrics_failed": failed_metrics,
+            "metrics_checked": METRICS,
+            "threshold": threshold,
+            "max_deviation": round(max_deviation, 2) if max_deviation > 0 else None
+        }
+
+    def _extract_metrics(self, report):
+        """Extract aggregated metrics from report."""
+        metrics = {}
+
+        # Metric columns are JSON - extract aggregated value
+        # The JSON typically contains aggregated metrics based on report.aggregation
+        metric_columns = [
+            'load_time', 'dom_processing', 'time_to_interactive',
+            'first_contentful_paint', 'largest_contentful_paint',
+            'total_blocking_time',
+            'first_visual_change', 'last_visual_change'
+        ]
+
+        for metric_name in metric_columns:
+            metric_value = getattr(report, metric_name, None)
+            if metric_value is not None and isinstance(metric_value, dict):
+                # Extract the aggregated value based on aggregation method
+                # Common keys: 'avg', 'max', 'min', 'pct95', 'pct50'
+                aggregation = report.aggregation or 'avg'
+                metrics[metric_name] = metric_value.get(aggregation, metric_value.get('avg', 0))
+            elif metric_value is not None:
+                # If it's a direct value
+                metrics[metric_name] = metric_value
+
+        return metrics
+
     @web.rpc('ui_performance_test_create_common_parameters', 'parse_common_test_parameters')
     def parse_common_test_parameters(self, project_id: int, test_params: dict, **kwargs) -> dict:
         overrideable_only = kwargs.pop('overrideable_only', False)
